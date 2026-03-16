@@ -1,26 +1,25 @@
+#v2.1
 import streamlit as st
-import pandas as pd
-from deepface import DeepFace
-from PIL import Image
 import numpy as np
+from PIL import Image
+from deepface import DeepFace
 
-# --- 1. 頁面基本設定 ---
+# 1. 頁面配置
 st.set_page_config(page_title="RightPick AI | Professional Suite", layout="wide")
 
-# --- 2. 注入你的專業 HTML/CSS ---
-# 我們將你的 HTML 拆解，用 st.markdown 注入
-professional_ui = """
+# 2. 注入全局 CSS (讓 Streamlit 組件更像你的 HTML 設計)
+st.markdown("""
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    .stApp { background-color: #f8fafc; }
+    .stApp { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+    .card { background: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
     .rightpick-blue { background: #5ba4cf; }
-    .rightpick-orange { background: #ff6b35; }
-    .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; }
+    .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; margin-bottom: 2rem; }
 </style>
 
-<nav class="glass-nav px-8 py-4 flex justify-between items-center sticky top-0 z-50 mb-6">
+<nav class="glass-nav px-8 py-4 flex justify-between items-center sticky top-0 z-50">
     <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rightpick-blue rounded-xl flex items-center justify-center text-white shadow-lg">
             <i class="fas fa-brain"></i>
@@ -30,79 +29,94 @@ professional_ui = """
             <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Occupation Suite v2.5</span>
         </div>
     </div>
-    <div class="hidden lg:flex space-x-6 text-sm font-semibold text-gray-500">
-        <span>Market Trends</span><span>GBA Portal</span><span>Resume Lab</span>
-    </div>
 </nav>
-"""
-st.markdown(professional_ui, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# --- 3. 佈局設計 ---
-col_left, col_right = st.columns([1, 2], gap="large")
+# 3. 建立三欄佈局
+col_left, col_mid, col_right = st.columns([1, 1.5, 1], gap="medium")
 
+# --- 左欄：原本的測試卡片 ---
 with col_left:
-    # 這裡放原本 HTML 的左側卡片設計
+    # Interest Analysis
     st.markdown('''
-        <div style="background: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #f1f5f9; margin-bottom: 1.5rem;">
-            <h3 style="font-weight: bold; font-size: 1.125rem; margin-bottom: 1rem;">Multimodal Analyst</h3>
-            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1rem;">Upload a photo to analyze your professional vibe and match it with career roles.</p>
+        <div class="card">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-bold text-lg">Interest Analysis</h3>
+                <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-bold">JUPAS AI</span>
+            </div>
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400" class="rounded-xl mb-4 opacity-80">
+            <a href="https://rightpickhk.com/career" style="text-decoration:none" target="_blank">
+                <div class="text-center py-2.5 bg-gray-900 text-white rounded-xl font-bold text-[10px]">Find Interested Jobs</div>
+            </a>
         </div>
     ''', unsafe_allow_html=True)
-    
-    # --- Streamlit 原生功能組件 ---
-    uploaded_file = st.file_uploader("選擇照片 (JPG/PNG)", type=['jpg', 'jpeg', 'png'])
 
+    # Personality Match
+    st.markdown('''
+        <div class="card">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-bold text-lg">Personality Match</h3>
+                <span class="text-[10px] bg-purple-50 text-purple-600 px-2 py-1 rounded-full font-bold">18 TYPES</span>
+            </div>
+            <p class="text-[11px] text-gray-500 mb-4 italic">"How does your character fit the workplace culture?"</p>
+            <a href="https://rightpickhk.com/personality" style="text-decoration:none" target="_blank">
+                <div class="text-center py-2.5 bg-purple-600 text-white rounded-xl font-bold text-[10px]">Start Personality Test</div>
+            </a>
+        </div>
+    ''', unsafe_allow_html=True)
+
+# --- 中欄：核心 AI 功能 ---
+with col_mid:
+    st.markdown('<h3 class="font-bold text-xl mb-4 text-center">🎭 Multimodal Analyst</h3>', unsafe_allow_html=True)
+    
+    uploaded_file = st.file_uploader("", type=['jpg', 'jpeg', 'png'], label_visibility="collapsed")
+    
     if uploaded_file:
         img = Image.open(uploaded_file)
-        st.image(img, caption="Ready for Analysis", use_container_width=True)
+        st.image(img, use_container_width=True)
         
-        if st.button("🚀 Start AI Analysis", use_container_width=True):
-            with st.spinner("AI is decoding your vibe..."):
+        if st.button("🚀 Start Professional Vibe Check", use_container_width=True):
+            with st.spinner("AI analyzing your talent profile..."):
                 try:
-                    # 原本的 DeepFace 邏輯
                     img_array = np.array(img)
-                    results = DeepFace.analyze(img_array, actions=['emotion', 'age', 'gender'], enforce_detection=False)
-                    
-                    # 存入 Session State 顯示在右邊
-                    st.session_state['analysis_done'] = True
-                    st.session_state['results'] = results[0]
+                    results = DeepFace.analyze(img_array, actions=['emotion'], enforce_detection=False)
+                    st.session_state['res'] = results[0]
                 except Exception as e:
-                    st.error(f"Analysis failed: {e}")
+                    st.error("Could not detect face. Please use a clearer photo.")
 
+    if 'res' in st.session_state:
+        vibe = st.session_state['res']['dominant_emotion'].capitalize()
+        st.markdown(f'''
+            <div style="background: white; padding: 2rem; border-radius: 1.5rem; border: 2px solid #3b82f6; text-align: center;">
+                <h4 class="text-blue-600 font-bold uppercase text-[10px] tracking-widest">Analysis Complete</h4>
+                <div class="text-4xl font-black my-2">{vibe}</div>
+                <p class="text-gray-500 text-sm">Your visual vibe suggests a strong match for <b>Strategic Leadership</b> roles.</p>
+            </div>
+        ''', unsafe_allow_html=True)
+
+# --- 右欄：Salary & Scraper ---
 with col_right:
-    # 這裡放右側的 2026 Skills Scraper 和 分析結果
-    st.markdown("""
-        <div style="background: #2563eb; color: white; padding: 2rem; border-radius: 1.5rem; margin-bottom: 2rem;">
-            <h2 style="font-weight: bold; font-style: italic; font-size: 1.25rem;">2026 Skills Scraper</h2>
-            <div style="display: flex; gap: 2rem; margin-top: 1rem;">
-                <div><span style="display: block; font-size: 2rem; font-weight: 900;">82%</span><span style="font-size: 0.6rem; opacity: 0.8;">MANDARIN/ENG</span></div>
-                <div><span style="display: block; font-size: 2rem; font-weight: 900;">64%</span><span style="font-size: 0.6rem; opacity: 0.8;">AI PROMPTING</span></div>
+    # Salary Insights
+    st.markdown('''
+        <div class="card">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-bold text-lg">Salary Insights</h3>
+                <span class="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded-full font-bold">2026 HK</span>
+            </div>
+            <p class="text-[11px] text-gray-500 mb-4">Compare your pay with industry benchmarks.</p>
+            <a href="https://rightpickhk.com/salary-compare" style="text-decoration:none" target="_blank">
+                <div class="text-center py-2.5 bg-green-600 text-white rounded-xl font-bold text-[10px]">Analyze My Salary</div>
+            </a>
+        </div>
+    ''', unsafe_allow_html=True)
+
+    # Skills Scraper (藍色大卡片)
+    st.markdown('''
+        <div style="background: #2563eb; color: white; padding: 1.5rem; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);">
+            <h2 class="font-bold italic text-sm">2026 Skills Scraper</h2>
+            <div class="flex justify-between mt-4">
+                <div><span class="block text-2xl font-black">82%</span><span class="text-[8px] uppercase">Bilingual</span></div>
+                <div><span class="block text-2xl font-black">64%</span><span class="text-[8px] uppercase">AI Prompts</span></div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
-
-    if 'analysis_done' in st.session_state:
-        res = st.session_state['results']
-        emotion = res['dominant_emotion'].capitalize()
-        
-        # 將 AI 數據填入你的 HTML 模板中
-        st.markdown(f"""
-            <div style="background: white; padding: 2rem; border-radius: 1.5rem; border: 1px solid #bfdbfe; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);">
-                <h3 style="font-weight: bold; font-size: 1.25rem; margin-bottom: 1.5rem;">AI Talent Analysis</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <div>
-                        <h4 style="font-size: 0.7rem; color: #94a3b8; font-weight: 900; text-transform: uppercase;">Professional Vibe</h4>
-                        <div style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #eff6ff; color: #1d4ed8; font-weight: bold; border-radius: 9999px; display: inline-block;">
-                            {emotion} & Confident
-                        </div>
-                    </div>
-                    <div>
-                        <h4 style="font-size: 0.7rem; color: #94a3b8; font-weight: 900; text-transform: uppercase;">Best Match</h4>
-                        <p style="font-weight: bold;">Business Analyst (Fintech)</p>
-                        <span style="color: #3b82f6; font-size: 0.75rem; font-weight: bold;">98% Compatibility</span>
-                    </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.info("Waiting for your input on the left panel...")
+    ''', unsafe_allow_html=True)
