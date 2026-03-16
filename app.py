@@ -41,7 +41,7 @@ with col_left:
     st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0;">Interest Analysis</h3>
+                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Interest Analysis</h3>
                 <span style="font-size: 10px; background-color: #eff6ff; color: #2563eb; padding: 4px 8px; border-radius: 9999px; font-weight: bold;">JUPAS AI</span>
             </div>
             <div style="background-color: #f1f5f9; height: 80px; border-radius: 1rem; margin-bottom: 1rem; overflow: hidden;">
@@ -57,7 +57,7 @@ with col_left:
     st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0;">Personality Match</h3>
+                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Personality Match</h3>
                 <span style="font-size: 10px; background-color: #faf5ff; color: #9333ea; padding: 4px 8px; border-radius: 9999px; font-weight: bold;">18 TYPES</span>
             </div>
             <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -69,27 +69,22 @@ with col_left:
             </a>
         </div>
     ''', unsafe_allow_html=True)
-    
-# --- 3. Salary Insights (完全修復顏色版) ---
+
+    # --- 3. Salary Insights ---
     st.markdown('''
-        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827; font-family: 'Inter', sans-serif;">Salary Insights</h3>
-                <span style="font-size: 10px; background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 9999px; font-weight: bold; text-transform: uppercase;">HK / GBA</span>
+                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Salary Insights</h3>
+                <span style="font-size: 10px; background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">HK / GBA</span>
             </div>
-            
-            <div style="display: flex; align-items: flex-end; gap: 6px; height: 50px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #f1f5f9;">
+            <div style="display: flex; align-items: flex-end; gap: 6px; height: 45px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #f1f5f9;">
                 <div style="background-color: #bbf7d0; width: 30%; height: 40%; border-radius: 4px 4px 0 0;"></div>
                 <div style="background-color: #86efac; width: 30%; height: 70%; border-radius: 4px 4px 0 0;"></div>
                 <div style="background-color: #22c55e; width: 30%; height: 100%; border-radius: 4px 4px 0 0;"></div>
             </div>
-            
-            <p style="font-size: 11px; color: #64748b; margin-bottom: 15px; line-height: 1.4;">Compare your expected pay with 2026 industry benchmarks.</p>
-            
+            <p style="font-size: 10px; color: #64748b; margin-bottom: 15px;">Compare your expected pay with 2026 industry benchmarks.</p>
             <a href="https://rightpickhk.com/salary-compare" target="_blank" style="text-decoration: none;">
-                <div style="text-align: center; padding: 12px; background-color: #16a34a; color: white !important; border-radius: 0.75rem; font-weight: bold; font-size: 11px; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.2);">
-                    Analyze My Salary
-                </div>
+                <div style="text-align: center; padding: 12px; background-color: #16a34a; color: white; border-radius: 0.75rem; font-weight: bold; font-size: 11px;">Analyze My Salary</div>
             </a>
         </div>
     ''', unsafe_allow_html=True)
