@@ -1,7 +1,6 @@
 streamlit
 deepface
-tf-keras
-tensorflow==2.18.0
+tensorflow==2.13.0
 opencv-python-headless
 pillow
 numpy
