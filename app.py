@@ -1,10 +1,11 @@
-
 import streamlit as st
 import numpy as np
 from PIL import Image
 from deepface import DeepFace
 import cv2
+import pdfplumber
 
+#version 2.6
 
 # 1. 頁面基本配置
 st.set_page_config(page_title="RightPick AI | Professional Suite", layout="wide", page_icon="🤖")
@@ -33,7 +34,7 @@ st.markdown("""
         </div>
         <div>
             <h1 class="font-bold text-gray-900 leading-none" style="margin:0">RightPick <span class="text-blue-500">AI</span></h1>
-            <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Professional Assistant v2.5</span>
+            <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Professional Assistant v2.6</span>
         </div>
     </div>
 </nav>
@@ -41,10 +42,12 @@ st.markdown("""
 
 
 # 3. 頁面佈局
-col_left, col_right = st.columns([1, 2.2], gap="large")
+# col_left, col_right = st.columns([1, 2.2], gap="large")
+col_left, col_mid, col_right = st.columns([0.8, 1.5, 1], gap="medium")
 
 
 with col_left:
+#3 tests
     # --- 1. Interest Analysis ---
     st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
@@ -80,7 +83,7 @@ with col_left:
     ''', unsafe_allow_html=True)
 
 
-    # --- 3. Salary Insights ---
+#     # --- 3. Salary Insights ---
     st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
@@ -101,7 +104,7 @@ with col_left:
     st.markdown("---")
 
 
-# --- 右側欄位 (col_right) ---
+# # --- 右側欄位 (col_right) --- skills scraper + skills review
 with col_right:
     # 1. 2026 Skills Scraper 卡片
     st.markdown('''
@@ -126,7 +129,7 @@ with col_right:
     ''', unsafe_allow_html=True)
 
 
-    # 2. Review Your Talent & Skills 卡片
+#     # 2. Review Your Talent & Skills 卡片
     st.markdown('''
         <div style="background-color: white; padding: 2rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
@@ -159,73 +162,127 @@ with col_right:
         </div>
     ''', unsafe_allow_html=True)
 
+with col_mid:
 
     # 3. AI Resume Lab
-    # AI Resume Lab - PROTOTYPE VERSION (Replace your current section)
+    # --- 定義職位類別關鍵字與建議課程數據庫 ---
+    # 這裡可以根據 RightPick 的定位，加入更多 HK/GBA 相關的關鍵字
+    # --- 經過驗證的職位類別與 LinkedIn Learning 連結數據庫 ---
+    JOB_DATABASE = {
+        "Data Science / AI": {
+            "keywords": ["python", "machine learning", "pandas", "sql", "pytorch", "tensorflow", "data visualization", "scikit-learn"],
+            "courses": [
+                {"skill": "Machine Learning Foundations", "url": "https://www.linkedin.com/learning/search?keywords=Machine+Learning+Foundations&upsellOrderOrigin=default_guest_learning&trk=homepage-learning_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "Data Science Principles", "url": "https://www.linkedin.com/learning/search?keywords=Data+Science+Principles&upsellOrderOrigin=default_guest_learning&trk=learning-serp_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "Generative AI for Professionals", "url": "https://www.linkedin.com/learning/search?keywords=Generative+AI+for+Professionals&upsellOrderOrigin=default_guest_learning&trk=learning-serp_learning-search-bar_search-submit", "platform": "LinkedIn Learning"}
+            ]
+        },
+        "Digital Marketing": {
+            "keywords": ["seo", "sem", "google analytics", "content strategy", "social media", "copywriting", "crm", "ads"],
+            "courses": [
+                {"skill": "Online Marketing Foundations", "url": "https://www.linkedin.com/learning/search?keywords=Online+Marketing+Foundations&upsellOrderOrigin=default_guest_learning&trk=learning-serp_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "Google Analytics 4 (GA4)", "url": "https://www.linkedin.com/learning/search?keywords=Google+Analytics+4+%28GA4%29&upsellOrderOrigin=default_guest_learning&trk=learning-serp_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "SEO Foundations", "url": "https://www.linkedin.com/learning/topics/seo", "platform": "LinkedIn Learning"}
+            ]
+        },
+        "Software Engineering": {
+            "keywords": ["react", "node.js", "javascript", "git", "docker", "aws", "api", "restful", "typescript", "cloud"],
+            "courses": [
+                {"skill": "Full-Stack Web Development", "url": "https://www.linkedin.com/learning/topics/full-stack-web-development", "platform": "LinkedIn Learning"},
+                {"skill": "Cloud Computing", "url": "https://www.linkedin.com/learning/search?keywords=Cloud+Computing&upsellOrderOrigin=default_guest_learning&trk=learning-serp_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "DevOps Foundations", "url": "https://www.linkedin.com/learning/topics/devops", "platform": "LinkedIn Learning"}
+            ]
+        },
+        "Finance & Fintech": {
+            "keywords": ["wealth management", "risk analysis", "investment", "cfa", "compliance", "excel", "banking", "blockchain"],
+            "courses": [
+                {"skill": "Financial Analysis Foundations", "url": "https://www.linkedin.com/learning/search?keywords=Financial+Analysis+Foundations&upsellOrderOrigin=default_guest_learning&trk=learning-page-not-found_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "FinTech Foundations", "url": "https://www.linkedin.com/learning/search?keywords=FinTech+Foundations&upsellOrderOrigin=default_guest_learning&trk=learning-serp_learning-search-bar_search-submit", "platform": "LinkedIn Learning"},
+                {"skill": "Corporate Finance", "url": "https://www.linkedin.com/learning/topics/corporate-finance", "platform": "LinkedIn Learning"}
+            ]
+        },
+        "UX/UI Design": {
+            "keywords": ["figma", "sketch", "adobe xd", "wireframing", "prototyping", "user research", "usability testing"],
+            "courses": [
+                {"skill": "User Experience (UX) Design", "url": "https://www.linkedin.com/learning/topics/user-experience", "platform": "LinkedIn Learning"},
+                {"skill": "Figma for UX Design", "url": "https://www.linkedin.com/learning/search?keywords=Figma+for+UX+Design&upsellOrderOrigin=default_guest_learning&trk=learning-page-not-found_learning-search-bar_search-submit", "platform": "LinkedIn Learning"}
+            ]
+        }    
+    }
+
     st.markdown("""
         <div style="background-color: white; padding: 2rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-weight: bold; font-size: 1.25rem; margin: 0;">🤖 AI Resume Lab</h3>
-            </div>
-            <div style="padding: 2rem; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1rem; border: 2px dashed #cbd5e1; text-align: center;">        
-                <h4 style="font-size: 1.125rem; font-weight: 700; color: #1f2937; margin: 0 0 0.5rem 0;"> Upload Your CV 📄</h4>
-                <p style="font-size: 14px; color: #64748b; margin: 0 0 1.5rem 0;">Get instant HK/GBA keyword optimization for JobsDB & LinkedIn</p>
+                <h3 style="font-weight: bold; font-size: 1.25rem; margin: 0;">🤖 AI Resume Lab & Course Finder</h3>
             </div>
     """, unsafe_allow_html=True)
 
-    # Simple drag-drop uploader
-    uploaded_cv = st.file_uploader("", type=["pdf", "docx"], key="cv_prototype")
-   
+    # 1. 職位類別選擇
+    category = st.selectbox(
+        "Step 1: Select Target Job Category | 選擇目標職位類別",
+        options=list(JOB_DATABASE.keys()),
+        index=0
+    )
+
+    # 2. 上傳檔案
+    uploaded_cv = st.file_uploader("Step 2: Upload Your CV (PDF)", type=["pdf"], key="cv_analyzer_v3")
+
     if uploaded_cv:
-        st.success("CV Uploaded! Optimizing keywords...")
+        with st.spinner("Analyzing CV content..."):
+            # 讀取 PDF 內容
+            try:
+                with pdfplumber.open(uploaded_cv) as pdf:
+                    cv_text = "".join([page.extract_text().lower() for page in pdf.pages if page.extract_text()])
+                
+                # 關鍵字比對邏輯
+                target_data = JOB_DATABASE[category]
+                found_keywords = [k for k in target_data["keywords"] if k in cv_text]
+                missing_keywords = [k for k in target_data["keywords"] if k not in cv_text]
+                
+                match_rate = int((len(found_keywords) / len(target_data["keywords"])) * 100)
 
-        # Prototype success screen (no real processing)
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 2rem; border-radius: 1.5rem; color: white; text-align: center; margin: 1rem 0;">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-            <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0 0 1rem 0;">CV Analysis Complete!</h2>
-            <p style="font-size: 16px; opacity: 0.95; margin-bottom: 2rem;">87% ATS Match • 92% Keyword Coverage</p>
-        </div>
-        """, unsafe_allow_html=True)
-       
-        # Mock results (static but looks real)
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("ATS Score", "87%", "↑ 12%")
-            st.metric("Keywords Found", "42/50", "+8")
-        with col2:
-            st.metric("JobsDB Match", "94%", "Perfect")
-            st.metric("LinkedIn Score", "89%", "Good")
-       
-        # Quick recommendations
-        st.markdown("""
-        <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 12px; border-left: 4px solid #10b981; margin: 1.5rem 0;">
-            <h4 style="font-size: 1.125rem; color: #059669; margin: 0 0 1rem 0;">🎯 Quick Fixes</h4>
-            <ul style="font-size: 14px; color: #374151; margin: 0; padding-left: 1.5rem;">
-                <li>Add "GBA Experience" & "Business Cantonese"</li>
-                <li>Quantify achievements (e.g. "Increased sales 35%")</li>
-                <li>Include LinkedIn URL</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-       
-        # # Action buttons
-        # col_btn1, col_btn2, col_btn3 = st.columns(3)
-        # with col_btn1:
-        #     if st.button("📥 Download Optimized", use_container_width=True, type="primary"):
-        #         st.balloons()
-        #         st.success("✅ Optimized CV ready for download!")
-        # with col_btn2:
-        #     st.button("🔗 Check LinkedIn", use_container_width=True)
-        # with col_btn3:
-        #     st.button("🎤 Mock Interview", use_container_width=True)
+                # 顯示分析結果
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 1.5rem; border-radius: 1rem; color: white; margin: 1rem 0;">
+                    <h4 style="margin:0; font-size: 14px; opacity: 0.8;">{category} Keyword Match Rate</h4>
+                    <div style="font-size: 2.5rem; font-weight: 800;">{match_rate}%</div>
+                </div>
+                """, unsafe_allow_html=True)
 
+                res_col1, res_col2 = st.columns(2)
+                with res_col1:
+                    st.markdown("#### ✅ Found Skills")
+                    for k in found_keywords:
+                        st.markdown(f"<span style='color: #16a34a; font-size: 13px;'>● {k.upper()}</span>", unsafe_allow_html=True)
+                
+                with res_col2:
+                    st.markdown("#### 🔍 Missing Skills")
+                    for k in missing_keywords:
+                        st.markdown(f"<span style='color: #dc2626; font-size: 13px;'>● {k.upper()}</span>", unsafe_allow_html=True)
+
+                # 3. 課程推薦區塊
+                st.markdown("---")
+                st.markdown("#### 📚 Recommended Courses to Enrich Your Experience")
+                st.info(f"To improve your profile for **{category}**, consider these courses:")
+                
+                for course in target_data["courses"]:
+                    # 邏輯：如果課程對應的技能是用戶缺少的，則顯示推薦（或全部顯示作為參考）
+                    st.markdown(f"""
+                    <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: bold; color: #1e293b; font-size: 14px;">{course['skill']}</div>
+                            <div style="font-size: 12px; color: #64748b;">{course['platform']}</div>
+                        </div>
+                        <a href="{course['url']}" target="_blank" style="text-decoration: none; background: #2563eb; color: white; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: bold;">View Course</a>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            except Exception as e:
+                st.error(f"Error processing PDF: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-
-       
-        # 這裡可以加上真正的 Streamlit 上傳按鈕，讓功能更真實
+    st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("---")
    
