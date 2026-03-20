@@ -5,7 +5,7 @@ from deepface import DeepFace
 import cv2
 import pdfplumber
 
-#version 2.7 - with Poll
+#version 2.7 - with Poll + skill cards
 
 # 1. 頁面基本配置
 st.set_page_config(page_title="RightPick AI | Professional Suite", layout="wide", page_icon="🤖")
@@ -204,7 +204,7 @@ with col_left:
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                 <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Salary Insights</h3>
-                <span style="font-size: 10px; background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">HK / GBA</span>
+                <span style="font-size: 10px; background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">HK / GBA 2026</span>
             </div>
             <div style="display: flex; align-items: flex-end; gap: 6px; height: 45px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #f1f5f9;">
                 <div style="background-color: #bbf7d0; width: 30%; height: 40%; border-radius: 4px 4px 0 0;"></div>
@@ -216,63 +216,66 @@ with col_left:
     ''', unsafe_allow_html=True)
 
     with st.popover("Analyze My Salary | 薪資分析", use_container_width=True):
-        st.write("### Market Benchmark | 市場基準")
+        st.write("### Market Benchmark (2026) | 市場基準")
         
-        # Selection of Role
-        job_role = st.selectbox(
-            "Select Job Role | 選擇職位類別",
-            [
-                "Data Science / AI | 數據科學",
-                "Digital Marketing | 數位行銷",
-                "Software Engineering | 軟體工程",
-                "Banking & Finance | 銀行與金融",
-                "UX/UI Design | 介面設計"
-            ]
-        )
+        # 職位列表
+        roles_options = [
+            "Data Science / AI | 數據科學",
+            "Software Engineering | 軟體工程",
+            "Banking & Finance | 銀行與金融",
+            "UX/UI Design | 介面設計",
+            "Digital Marketing | 數位行銷"
+        ]
         
-        # Expected Salary Slider
+        job_role = st.selectbox("Select Job Role | 選擇職位類別", roles_options)
+        
         expected_pay = st.slider(
             "Monthly Expected Salary (HKD) | 預期月薪",
             min_value=15000,
-            max_value=80000,
-            value=25000,
-            step=500
+            max_value=100000, # 擴大範圍以應對資深職位
+            value=28000,
+            step=1000
         )
         
-        if st.button("Compare with Market | 與市場對比"):
-            # Mock Market Data for 2026
+        if st.button("Compare with Market | 與市場對比", use_container_width=True):
+            # 更加擬真的 2026 市場預測數據 (中位數)
             market_data = {
-                "Data Science": 35000,
-                "Digital Marketing": 24000,
-                "Software Engineering": 32000,
-                "Banking & Finance": 30000,
-                "UX/UI Design": 28000
+                "Data Science / AI": 38500,
+                "Software Engineering": 34000,
+                "Banking & Finance": 32000,
+                "UX/UI Design": 29500,
+                "Digital Marketing": 25500
             }
             
-            # Extract key for dict
-            key = job_role.split(" | ")[0].split(" / ")[0] if "/" in job_role else job_role.split(" | ")[0]
-            avg_pay = market_data.get(key, 25000)
+            # 獲取基準薪資
+            avg_pay = market_data.get(job_role, 30000)
+            diff_pct = ((expected_pay - avg_pay) / avg_pay) * 100
             
-            diff = ((expected_pay - avg_pay) / avg_pay) * 100
+            # 顯示基準
+            st.write(f"**Market Median (2026):** HKD {avg_pay:,}")
             
-            st.markdown(f"**Market Average (2026):** HKD {avg_pay:,}")
-            
-            if diff >= 0:
-                st.success(f"Your expectation is **{abs(diff):.1f}% above** average. | 你的預期高於平均 {abs(diff):.1f}%。")
+            # 邏輯判斷
+            if diff_pct > 20:
+                st.success(f"**Premium Range:** Your expectation is {abs(diff_pct):.1f}% above average. Target top-tier firms.")
+            elif diff_pct >= -10 and diff_pct <= 20:
+                st.info(f"**Market Fit:** Your expectation is within the healthy market range ({diff_pct:+.1f}%).")
             else:
-                st.warning(f"Your expectation is **{abs(diff):.1f}% below** average. | 你的預期低於平均 {abs(diff):.1f}%。")
+                st.warning(f"**Below Market:** Your expectation is {abs(diff_pct):.1f}% below average. Consider negotiating higher.")
 
-            # Dynamic insight box
+            # 動態建議區塊 (根據職位)
+            top_quartile = int(avg_pay * 1.35) # 前 25% 的高薪水平
+            
             st.markdown(f"""
-            <div style="background-color: #f0fdf4; padding: 12px; border-radius: 10px; border: 1px solid #dcfce7; margin-top: 10px;">
-                <p style="font-size: 12px; color: #166534; margin: 0;">
-                    <strong>💡 Market Tip | 市場建議:</strong><br>
-                    For <strong>{job_role.split(' | ')[0]}</strong>, top 25% of candidates in the GBA region earn above HKD {int(avg_pay*1.3):,}.
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px;">
+                <p style="font-size: 13px; color: #334155; margin: 0;">
+                    <strong>💡 Market Tip for {job_role.split(' | ')[0]}:</strong><br>
+                    High-demand skills like <b>Cloud Architecture</b> or <b>Generative AI</b> can push GBA packages beyond <b>HKD {top_quartile:,}</b> in 2026.
                 </p>
             </div>
             """, unsafe_allow_html=True)
             
-            st.markdown("[View Full Salary Guide | 查看完整薪資指南 →](https://rightpickhk.com/salary-compare)")
+            st.divider()
+            st.markdown("[View Full 2026 Salary Guide →](https://rightpickhk.com/salary-compare)")
 
 st.markdown("---")
 
@@ -303,40 +306,122 @@ with col_right:
 
 
 #     # 2. Review Your Talent & Skills 卡片
+# --- 1. 強化版技能池 (Categorized Skills Pool) ---
+# 將技能分類，讓用戶在選擇時更有組織感
+    SKILLS_MARKET = {
+        "Technical / Hard Skills": [
+            "Python (Data Science)", "Machine Learning", "Generative AI Prompting", 
+            "SQL / NoSQL", "Cloud Computing (AWS/Azure)", "React / Next.js", 
+            "Mobile Dev (Flutter/Dart)", "Cybersecurity", "Financial Modeling", "SEO/SEM"
+        ],
+        "Tools & Software": [
+            "Figma / Adobe XD", "Tableau / Power BI", "Git / GitHub", 
+            "Docker / Kubernetes", "Google Analytics 4", "Salesforce CRM"
+        ],
+        "Soft Skills & Languages": [
+            "Critical Thinking", "Project Management", "Cantonese (Native)", 
+            "English (Business)", "Mandarin (Professional)", "UX Writing", "Public Speaking"
+        ]
+    }
+
+    # 攤平成為一個單一列表供 multiselect 使用
+    ALL_SKILLS_FLAT = [skill for sublist in SKILLS_MARKET.values() for skill in sublist]
+
+    # --- 2. 強化版職業資料庫 (Enhanced Job DB) ---
+    # 包含 2026 年高薪及高需求職位
+    JOB_DATABASE = {
+        "AI Solution Architect": {
+            "skills": ["Generative AI Prompting", "Python (Data Science)", "Cloud Computing (AWS/Azure)", "Critical Thinking"],
+            "desc": "Designing AI-driven workflows for enterprises."
+        },
+        "Fintech Business Analyst": {
+            "skills": ["Financial Modeling", "SQL / NoSQL", "Tableau / Power BI", "English (Business)"],
+            "desc": "Bridging the gap between finance and technology."
+        },
+        "Full-Stack Developer (GBA Focus)": {
+            "skills": ["React / Next.js", "Python (Data Science)", "Git / GitHub", "Cantonese (Native)"],
+            "desc": "Building cross-border digital platforms."
+        },
+        "UX/UI Product Designer": {
+            "skills": ["Figma / Adobe XD", "UX Writing", "Critical Thinking", "User Research"],
+            "desc": "Creating human-centric AI interfaces."
+        },
+        "Digital Growth Strategist": {
+            "skills": ["SEO/SEM", "Google Analytics 4", "Public Speaking", "Mandarin (Professional)"],
+            "desc": "Driving user acquisition in the GBA market."
+        },
+        "Cybersecurity Consultant": {
+            "skills": ["Cybersecurity", "Cloud Computing (AWS/Azure)", "Docker / Kubernetes", "Critical Thinking"],
+            "desc": "Protecting enterprise data integrity."
+        }
+    }
+
+    # --- 3. UI 渲染 ---
+
     st.markdown('''
-        <div style="background-color: white; padding: 2rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
-                <div style="padding: 8px; background-color: #dbeafe; color: #2563eb; border-radius: 0.75rem;"><i class="fas fa-star"></i></div>
-                <h3 style="font-weight: bold; font-size: 1.25rem; color: #1f2937; margin: 0;">Review Your Talent & Skills</h3>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <div>
-                    <h4 style="font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Your Strength Stack</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        <span style="padding: 4px 12px; background-color: #eff6ff; color: #1d4ed8; font-size: 10px; font-weight: bold; border-radius: 9999px; border: 1px solid #dbeafe;">Data Visualization</span>
-                        <span style="padding: 4px 12px; background-color: #eff6ff; color: #1d4ed8; font-size: 10px; font-weight: bold; border-radius: 9999px; border: 1px solid #dbeafe;">Critical Thinking</span>
-                        <span style="padding: 4px 12px; background-color: #eff6ff; color: #1d4ed8; font-size: 10px; font-weight: bold; border-radius: 9999px; border: 1px solid #dbeafe;">Cantonese (Native)</span>
-                    </div>
-                </div>
-                <div>
-                    <h4 style="font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">5-10 Matches Found</h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; padding: 8px; background-color: #f8fafc; border-radius: 0.5rem; border: 1px solid #e2e8f0; font-size: 11px;">
-                            <span style="font-weight: bold;">Business Analyst (Fintech)</span>
-                            <span style="color: #3b82f6; font-weight: bold;">98% Match</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px; background-color: #f8fafc; border-radius: 0.5rem; border: 1px solid #e2e8f0; font-size: 11px;">
-                            <span style="font-weight: bold;">Digital Outreach Lead</span>
-                            <span style="color: #3b82f6; font-weight: bold;">92% Match</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="font-weight: bold; font-size: 1.25rem; color: #1f2937; margin: 0;">Review Your Talent & Skills</h3>
+            <p style="font-size: 0.875rem; color: #64748b;">Update your stack to see 2026 career compatibility.</p>
         </div>
     ''', unsafe_allow_html=True)
 
-with col_mid:
+    col_input, col_display = st.columns([1.1, 1])
 
+    with col_input:
+        st.markdown('<p style="font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.8rem;">Select Your Professional Stack</p>', unsafe_allow_html=True)
+        
+        # 分類展示 (選填：這裡使用 multiselect 即可，或是可以分三個 multiselect)
+        user_skills = st.multiselect(
+            "Search skills (e.g., Python, Figma, Cantonese)",
+            options=ALL_SKILLS_FLAT,
+            default=["Python (Data Science)", "Critical Thinking", "Cantonese (Native)"],
+            label_visibility="collapsed"
+        )
+
+    with col_display:
+        st.markdown('<p style="font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.8rem;">Matching Career Paths</p>', unsafe_allow_html=True)
+        
+        if not user_skills:
+            st.warning("Please add skills to view matches.")
+        else:
+            # 計算匹配度
+            results = []
+            for job_title, data in JOB_DATABASE.items():
+                required = data["skills"]
+                # 計算交集
+                match_count = len(set(user_skills).intersection(set(required)))
+                score = int((match_count / len(required)) * 100)
+                
+                if score > 0:
+                    results.append({"title": job_title, "score": score, "desc": data["desc"]})
+            
+            # 排序：分數最高排前面
+            results = sorted(results, key=lambda x: x["score"], reverse=True)
+
+            for item in results:
+                # 根據分數決定顏色
+                score_color = "#16a34a" if item["score"] >= 75 else "#2563eb" if item["score"] >= 40 else "#94a3b8"
+                
+                st.markdown(f'''
+                    <div style="background-color: white; padding: 12px; border-radius: 1rem; border: 1px solid #e2e8f0; margin-bottom: 10px; transition: 0.3s;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="width: 75%;">
+                                <div style="font-size: 13px; font-weight: bold; color: #1e293b;">{item["title"]}</div>
+                                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">{item["desc"]}</div>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 800; color: {score_color};">
+                                {item["score"]}%
+                            </div>
+                        </div>
+                        <div style="width: 100%; background-color: #f1f5f9; height: 4px; border-radius: 2px; margin-top: 8px;">
+                            <div style="background-color: {score_color}; width: {item["score"]}%; height: 100%; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
+
+    st.caption("✨ Matches updated in real-time based on RightPick's 2026 Skills Matrix.")
+
+with col_mid:
     # 3. AI Resume Lab
     # --- 定義職位類別關鍵字與建議課程數據庫 ---
     # 這裡可以根據 RightPick 的定位，加入更多 HK/GBA 相關的關鍵字
