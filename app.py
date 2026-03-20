@@ -5,7 +5,7 @@ from deepface import DeepFace
 import cv2
 import pdfplumber
 
-#version 2.6
+#version 2.7 - with Poll
 
 # 1. 頁面基本配置
 st.set_page_config(page_title="RightPick AI | Professional Suite", layout="wide", page_icon="🤖")
@@ -45,29 +45,84 @@ st.markdown("""
 # col_left, col_right = st.columns([1, 2.2], gap="large")
 col_left, col_mid, col_right = st.columns([0.8, 1.5, 1], gap="medium")
 
-
 with col_left:
 #3 tests
     # --- 1. Interest Analysis ---
     st.markdown('''
-        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
+        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                 <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Interest Analysis</h3>
                 <span style="font-size: 10px; background-color: #eff6ff; color: #2563eb; padding: 4px 8px; border-radius: 9999px; font-weight: bold;">JUPAS AI</span>
             </div>
-            <div style="background-color: #f1f5f9; height: 80px; border-radius: 1rem; margin-bottom: 1rem; overflow: hidden;">
+            <div style="background-color: #f1f5f9; height: 60px; border-radius: 1rem; margin-bottom: 1rem; overflow: hidden;">
                 <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400" style="width:100%; height:100%; object-fit: cover; opacity: 0.6;">
             </div>
-            <a href="https://rightpickhk.com/career" target="_blank" style="text-decoration: none;">
-                <div style="text-align: center; padding: 10px; background-color: #111827; color: white; border-radius: 0.75rem; font-weight: bold; font-size: 10px;">Find Interested Jobs</div>
-            </a>
         </div>
     ''', unsafe_allow_html=True)
 
+    with st.popover("Start Career Quiz | 開始職業測評", use_container_width=True):
+        st.subheader("Quick Diagnostic | 快速診斷")
+        
+        # 問題 1
+        q1 = st.radio(
+            "1. Which do you prefer working with? | 你更喜歡處理什麼？",
+            [
+                "Data & Logic | 數據與邏輯", 
+                "Creative Design | 創意設計", 
+                "People & Social | 人際溝通", 
+                "Hands-on Technical | 實務操作"
+            ]
+        )
+        
+        # 問題 2
+        q2 = st.selectbox(
+            "2. Ideal work environment? | 理想工作環境？",
+            [
+                "Corporate / Office | 大型企業/辦公室", 
+                "Startup / Flexible | 初創公司/靈活空間", 
+                "Studio / Outdoor | 工作室/戶外", 
+                "Remote / Digital | 遠端工作/數位化"
+            ]
+        )
+        
+        # 問題 3
+        q3 = st.select_slider(
+            "3. What do you value most? | 你最看重什麼？",
+            options=["Stability | 穩定", "Salary | 薪酬", "Impact | 影響力", "Innovation | 創新"]
+        )
+        
+        if st.button("Generate My Analysis | 生成我的分析"):
+            # 診斷邏輯
+            result_title = ""
+            result_desc = ""
+            
+            if "Data" in q1 or "Innovation" in q3:
+                result_title = "Data Science / FinTech"
+                result_desc = "You have a strong analytical mindset. | 你具備強大的邏輯分析能力。"
+            elif "Creative" in q1:
+                result_title = "Digital Media / UIUX"
+                result_desc = "Your strength lies in visual storytelling. | 你的優勢在於視覺敘事。"
+            elif "People" in q1:
+                result_title = "Management / Marketing"
+                result_desc = "You are a natural communicator. | 你是天生的溝通者。"
+            else:
+                result_title = "Engineering / IT Ops"
+                result_desc = "You excel at solving practical problems. | 你擅長解決實際問題。"
+                
+            st.markdown(f"""
+            <div style="background: #f0fdf4; padding: 15px; border-radius: 12px; border: 1px solid #bbf7d0; margin-top: 15px;">
+                <p style="color: #166534; font-size: 12px; font-weight: bold; margin-bottom: 5px;">RESULT | 分析結果：</p>
+                <h4 style="margin:0; color: #15803d; font-size: 1.1rem;">{result_title}</h4>
+                <p style="font-size: 13px; color: #166534; margin-top: 5px;">{result_desc}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.caption("Powered by RightPick")
+            st.markdown("[Test for a Full Interest Analysis Report →](https://rightpickhk.com/career)")
 
     # --- 2. Personality Match ---
     st.markdown('''
-        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
+        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                 <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Personality Match</h3>
                 <span style="font-size: 10px; background-color: #faf5ff; color: #9333ea; padding: 4px 8px; border-radius: 9999px; font-weight: bold;">18 TYPES</span>
@@ -76,32 +131,150 @@ with col_left:
                 <div style="width: 32px; height: 32px; background-color: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; color: #7e22ce;">ENTP</div>
                 <div style="width: 32px; height: 32px; background-color: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; color: #1d4ed8;">ISTJ</div>
             </div>
-            <a href="https://rightpickhk.com/personality" target="_blank" style="text-decoration: none;">
-                <div style="text-align: center; padding: 10px; background-color: #9333ea; color: white; border-radius: 0.75rem; font-weight: bold; font-size: 10px;">Start Personality Test</div>
-            </a>
         </div>
     ''', unsafe_allow_html=True)
 
+    with st.popover("Start Personality Test | 開始性格測試", use_container_width=True):
+        st.write("### Quick Assessment | 快速評估")
+        
+        q1 = st.radio(
+            "1. Where do you get your energy? | 你的能量來源？",
+            ["Extraversion (E) | 社交與外部活動", "Introversion (I) | 獨處與內心世界"]
+        )
+        q2 = st.radio(
+            "2. How do you process information? | 你如何處理資訊？",
+            ["Sensing (S) | 現實與細節", "Intuition (N) | 想像與大方向"]
+        )
+        q3 = st.radio(
+            "3. How do you make decisions? | 你如何做決定？",
+            ["Thinking (T) | 邏輯與客觀", "Feeling (F) | 情感與價值觀"]
+        )
+        q4 = st.radio("4. Lifestyle / Workstyle | 生活與工作風格", 
+                  ["Judging (J) | 計劃、條理、求快", "Perceiving (P) | 靈活、隨性、求穩"])
+    
+        if st.button("Generate Detailed Report", use_container_width=True):
+            # --- 穩健的字母抓取邏輯 ---
+            m1 = "E" if "Extraversion" in q1 else "I"
+            m2 = "S" if "Sensing" in q2 else "N"
+            m3 = "T" if "Thinking" in q3 else "F"
+            m4 = "J" if "Judging" in q4 else "P"
+            
+            mcode = f"{m1}{m2}{m3}{m4}" # 這樣一定會是準確的 4 個大寫字母          
+            # Mapping 16 types to bilingual data
+            profiles = {
+                "INTJ": {"title": "The Architect | 戰略建築師", "jobs": "AI Architect | AI架構師, Data Scientist | 數據科學家", "traits": "Strategic, Logical | 具戰略眼光、理智"},
+                "INTP": {"title": "The Logician | 邏輯學家", "jobs": "Software Developer | 軟體開發者, Researcher | 研究員", "traits": "Analytical, Inventive | 善於分析、具創造力"},
+                "ENTJ": {"title": "The Commander | 指揮官", "jobs": "CEO / Founder | 執行長, Management Consultant | 管理顧問", "traits": "Decisive, Bold | 果斷、大膽"},
+                "ENTP": {"title": "The Debater | 辯論家", "jobs": "Product Manager | 產品經理, Entrepreneur | 創業家", "traits": "Curious, Flexible | 具好奇心、靈活"},
+                "INFJ": {"title": "The Advocate | 提倡者", "jobs": "Counselor | 心理輔導, Creative Director | 創意總監", "traits": "Idealistic, Insightful | 理想主義、具洞察力"},
+                "INFP": {"title": "The Mediator | 調解者", "jobs": "Writer | 作家, UX Designer | 用戶體驗設計師", "traits": "Empathetic, Creative | 具共情力、有創意"},
+                "ENFJ": {"title": "The Protagonist | 主人翁", "jobs": "Public Relations | 公關經理, Educator | 教育家", "traits": "Charismatic, Inspiring | 具魅力、具啟發性"},
+                "ENFP": {"title": "The Campaigner | 競選者", "jobs": "Marketing Lead | 市場營銷主管, Social Media | 社媒專家", "traits": "Enthusiastic, Creative | 熱情、有創意"},
+                "ISTJ": {"title": "The Logistician | 物流師", "jobs": "Accountant | 會計師, Systems Engineer | 系統工程師", "traits": "Reliable, Practical | 可靠、務實"},
+                "ISFJ": {"title": "The Defender | 守衛者", "jobs": "HR Admin | 人事行政, Customer Success | 客戶成功經理", "traits": "Loyal, Supportive | 忠誠、具支持性"},
+                "ESTJ": {"title": "The Executive | 總經理", "jobs": "Project Manager | 專案經理, Factory Director | 廠長", "traits": "Organized, Direct | 有條理、直接"},
+                "ESFJ": {"title": "The Consul | 執政官", "jobs": "Event Planner | 活動策劃, Sales Manager | 銷售經理", "traits": "Social, Cooperative | 擅長社交、協作"},
+                "ISTP": {"title": "The Virtuoso | 鑑賞家", "jobs": "Technical Analyst | 技術分析, Cyber Security | 網絡安全", "traits": "Practical, Problem-solver | 務實、問題解決者"},
+                "ISFP": {"title": "The Adventurer | 探險家", "jobs": "Graphic Designer | 平面設計師, Artist | 藝術家", "traits": "Sensitive, Flexible | 敏感、靈活"},
+                "ESTP": {"title": "The Entrepreneur | 企業家", "jobs": "Sales Lead | 銷售主管, Risk Manager | 風險管理員", "traits": "Energetic, Action-oriented | 活力充沛、行動導向"},
+                "ESFP": {"title": "The Entertainer | 表演者", "jobs": "Hospitality Lead | 酒店管理, Tour Guide | 領隊", "traits": "Spontaneous, Social | 隨性、社交型"}
+            }
+            
+            res = profiles.get(mcode, {"title": "Professional Talent | 專業人才", "jobs": "Industry Specialist | 行業專家", "traits": "Competent & Driven | 具備能力與動力"})            
+    # Enhanced Result Card
+            st.markdown(f"""
+            <div style="background: #fdfaff; padding: 20px; border-radius: 12px; border: 1px solid #ddd6fe; margin-top: 15px;">
+                <p style="color: #7e22ce; font-size: 11px; font-weight: bold; margin-bottom: 5px;">ANALYSIS RESULT | 分析結果：</p>
+                <h4 style="margin:0; color: #6b21a8; font-size: 1.1rem;">{mcode}: {res['title']}</h4>
+                <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #7e22ce;">
+                    <p style="font-size: 12px; color: #4b5563; margin: 0;"><strong>Top Match | 最佳匹配:</strong></p>
+                    <p style="font-size: 13px; color: #7e22ce; font-weight: 600; margin: 0;">{res['jobs']}</p>
+                </div>
+                <p style="font-size: 11px; color: #9ca3af; margin-top: 10px;">Matched via RightPick Career Engine</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.caption("Based on RightPick Career Mapping Engine")
+            st.markdown("[Get Full 20-Page Personality Analysis →](https://rightpickhk.com/personality)")
 
-#     # --- 3. Salary Insights ---
+
+
+# --- 3. Salary Insights (Interactive Benchmark Tool) ---
     st.markdown('''
-        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
+        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                 <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Salary Insights</h3>
                 <span style="font-size: 10px; background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">HK / GBA</span>
             </div>
-            <div style="display: flex; align-items: flex-end; gap: 6px; height: 45px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #f1f5f9;">
+            <div style="display: flex; align-items: flex-end; gap: 6px; height: 45px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #f1f5f9;">
                 <div style="background-color: #bbf7d0; width: 30%; height: 40%; border-radius: 4px 4px 0 0;"></div>
                 <div style="background-color: #86efac; width: 30%; height: 70%; border-radius: 4px 4px 0 0;"></div>
                 <div style="background-color: #22c55e; width: 30%; height: 100%; border-radius: 4px 4px 0 0;"></div>
             </div>
-            <p style="font-size: 10px; color: #64748b; margin-bottom: 15px;">Compare your expected pay with 2026 industry benchmarks.</p>
-            <a href="https://rightpickhk.com/salary-compare" target="_blank" style="text-decoration: none;">
-                <div style="text-align: center; padding: 12px; background-color: #16a34a; color: white; border-radius: 0.75rem; font-weight: bold; font-size: 11px;">Analyze My Salary</div>
-            </a>
+            <p style="font-size: 10px; color: #64748b; margin-bottom: 5px;">Compare your expected pay with 2026 industry benchmarks.</p>
         </div>
     ''', unsafe_allow_html=True)
-    st.markdown("---")
+
+    with st.popover("Analyze My Salary | 薪資分析", use_container_width=True):
+        st.write("### Market Benchmark | 市場基準")
+        
+        # Selection of Role
+        job_role = st.selectbox(
+            "Select Job Role | 選擇職位類別",
+            [
+                "Data Science / AI | 數據科學",
+                "Digital Marketing | 數位行銷",
+                "Software Engineering | 軟體工程",
+                "Banking & Finance | 銀行與金融",
+                "UX/UI Design | 介面設計"
+            ]
+        )
+        
+        # Expected Salary Slider
+        expected_pay = st.slider(
+            "Monthly Expected Salary (HKD) | 預期月薪",
+            min_value=15000,
+            max_value=80000,
+            value=25000,
+            step=500
+        )
+        
+        if st.button("Compare with Market | 與市場對比"):
+            # Mock Market Data for 2026
+            market_data = {
+                "Data Science": 35000,
+                "Digital Marketing": 24000,
+                "Software Engineering": 32000,
+                "Banking & Finance": 30000,
+                "UX/UI Design": 28000
+            }
+            
+            # Extract key for dict
+            key = job_role.split(" | ")[0].split(" / ")[0] if "/" in job_role else job_role.split(" | ")[0]
+            avg_pay = market_data.get(key, 25000)
+            
+            diff = ((expected_pay - avg_pay) / avg_pay) * 100
+            
+            st.markdown(f"**Market Average (2026):** HKD {avg_pay:,}")
+            
+            if diff >= 0:
+                st.success(f"Your expectation is **{abs(diff):.1f}% above** average. | 你的預期高於平均 {abs(diff):.1f}%。")
+            else:
+                st.warning(f"Your expectation is **{abs(diff):.1f}% below** average. | 你的預期低於平均 {abs(diff):.1f}%。")
+
+            # Dynamic insight box
+            st.markdown(f"""
+            <div style="background-color: #f0fdf4; padding: 12px; border-radius: 10px; border: 1px solid #dcfce7; margin-top: 10px;">
+                <p style="font-size: 12px; color: #166534; margin: 0;">
+                    <strong>💡 Market Tip | 市場建議:</strong><br>
+                    For <strong>{job_role.split(' | ')[0]}</strong>, top 25% of candidates in the GBA region earn above HKD {int(avg_pay*1.3):,}.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("[View Full Salary Guide | 查看完整薪資指南 →](https://rightpickhk.com/salary-compare)")
+
+st.markdown("---")
 
 
 # # --- 右側欄位 (col_right) --- skills scraper + skills review
