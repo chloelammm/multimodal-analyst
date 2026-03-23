@@ -4,6 +4,7 @@ from PIL import Image
 from deepface import DeepFace
 import cv2
 import pdfplumber
+import plotly.graph_objects as go
 
 #version 2.7 - with Poll + skill cards
 
@@ -121,83 +122,160 @@ with col_left:
             st.markdown("[Test for a Full Interest Analysis Report →](https://rightpickhk.com/career)")
 
     # --- 2. Personality Match ---
+    import plotly.graph_objects as go
+
+# --- 2. Personality Match (Advanced Weighted & Bilingual) ---
     st.markdown('''
-        <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Personality Match</h3>
-                <span style="font-size: 10px; background-color: #faf5ff; color: #9333ea; padding: 4px 8px; border-radius: 9999px; font-weight: bold;">18 TYPES</span>
-            </div>
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <div style="width: 32px; height: 32px; background-color: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; color: #7e22ce;">ENTP</div>
-                <div style="width: 32px; height: 32px; background-color: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; color: #1d4ed8;">ISTJ</div>
-            </div>
+    <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">RightPick Talent Matrix | 人才矩陣</h3>
+            <span style="font-size: 10px; background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">v4.2 PRO</span>
         </div>
+        <p style="font-size: 11px; color: #64748b; margin: 0;">Scientific trait analysis for the 2026 GBA market. | 針對 2026 大灣區市場的科學特質分析。</p>
+    </div>
     ''', unsafe_allow_html=True)
 
-    with st.popover("Start Personality Test | 開始性格測試", use_container_width=True):
-        st.write("### Quick Assessment | 快速評估")
-        
-        q1 = st.radio(
-            "1. Where do you get your energy? | 你的能量來源？",
-            ["Extraversion (E) | 社交與外部活動", "Introversion (I) | 獨處與內心世界"]
-        )
-        q2 = st.radio(
-            "2. How do you process information? | 你如何處理資訊？",
-            ["Sensing (S) | 現實與細節", "Intuition (N) | 想像與大方向"]
-        )
-        q3 = st.radio(
-            "3. How do you make decisions? | 你如何做決定？",
-            ["Thinking (T) | 邏輯與客觀", "Feeling (F) | 情感與價值觀"]
-        )
-        q4 = st.radio("4. Lifestyle / Workstyle | 生活與工作風格", 
-                  ["Judging (J) | 計劃、條理、求快", "Perceiving (P) | 靈活、隨性、求穩"])
-    
-        if st.button("Generate Detailed Report", use_container_width=True):
-            # --- 穩健的字母抓取邏輯 ---
-            m1 = "E" if "Extraversion" in q1 else "I"
-            m2 = "S" if "Sensing" in q2 else "N"
-            m3 = "T" if "Thinking" in q3 else "F"
-            m4 = "J" if "Judging" in q4 else "P"
-            
-            mcode = f"{m1}{m2}{m3}{m4}" # 這樣一定會是準確的 4 個大寫字母          
-            # Mapping 16 types to bilingual data
+    with st.popover("🚀 Launch Professional Assessment | 啟動專業深度測評", use_container_width=True):
+        st.markdown("#### Workplace Behavioral Audit | 職場行為審計")
+        st.write("Rate from **1 (Strongly Disagree | 極不同意)** to **5 (Strongly Agree | 極同意)**")
+
+        questions = [
+            # E vs I
+            ("I feel energized after a day of back-to-back client meetings. | 經過一整天密集的客戶會議後，我感到充滿活力。", "E"),
+            ("I prefer brainstorming in a group rather than solving problems alone. | 我傾向團隊腦力激盪，多於獨自解決問題。", "E"),
+            ("I am usually the first to speak up in cross-functional workshops. | 在跨部門工作坊中，我通常是第一個發言的人。", "E"),
+            ("I find large networking events in Central/GBA exciting. | 我覺得在中環或大灣區的大型交流活動非常有趣。", "E"),
+            # S vs N
+            ("I focus more on immediate practical facts than future theories. | 我更關注目前的實際事實，而非未來的理論。", "S"),
+            ("I prefer following a proven standard operating procedure (SOP). | 我傾向遵循已被證實有效的標準作業程序 (SOP)。", "S"),
+            ("I value realistic experience over abstract innovation. | 比起抽象的創新，我更看重務實的經驗。", "S"),
+            ("I am more comfortable with data I can see and verify. | 處理看得見且能驗證的數據讓我感到更踏實。", "S"),
+            # T vs F
+            ("I make decisions based on logical analysis rather than feelings. | 我根據邏輯分析做決定，而非個人感覺。", "T"),
+            ("I believe being direct is more important than protecting feelings. | 我認為直接指出問題比顧及對方感受更重要。", "T"),
+            ("I prioritize project efficiency over team social harmony. | 我優先考慮項目效率，多於團隊的社交和諧。", "T"),
+            ("I rely on objective metrics to settle workplace disagreements. | 我依賴客觀指標來解決職場上的分歧。", "T"),
+            # J vs P
+            ("I feel more comfortable with a strictly planned weekly schedule. | 我對嚴格規劃的每週時程表感到更自在。", "J"),
+            ("I prefer finishing tasks well before the deadline to avoid stress. | 我喜歡在死線前早早完成任務以避免壓力。", "J"),
+            ("I like to have my digital work environment highly organized. | 我喜歡將數位工作環境整理得井井有條。", "J"),
+            ("I feel uneasy when a project's requirements change last minute. | 當項目需求在最後一刻改變時，我會感到不安。", "J"),
+        ]
+
+        scores = []
+        for i, (q_text, trait) in enumerate(questions):
+            val = st.select_slider(f"**Q{i+1}.** {q_text}", options=[1, 2, 3, 4, 5], value=3, key=f"adv_q_{i}")
+            scores.append((val, trait))
+            if (i + 1) % 4 == 0: st.divider()
+
+        if st.button("Generate Report | 生成報告", use_container_width=True):
+            e_val = sum(s[0] for s in scores[0:4])
+            s_val = sum(s[0] for s in scores[4:8])
+            t_val = sum(s[0] for s in scores[8:12])
+            j_val = sum(s[0] for s in scores[12:16])
+
+            # Dimension selection
+            mcode = f"{'E' if e_val >= 12 else 'I'}{'S' if s_val >= 12 else 'N'}{'T' if t_val >= 12 else 'F'}{'J' if j_val >= 12 else 'P'}"
+
+            # Logic for Radar Chart Percentages (Min 4pts = 0%, Max 20pts = 100%)
+            # This shows how much you lean into the E, S, T, and J traits.
+            #radar_values = [(v - 4) / 16 * 100 for v in [e_val, s_val, t_val, j_val]]
+            categories = ['Extraversion', 'Sensing', 'Thinking', 'Judging']
+
             profiles = {
-                "INTJ": {"title": "The Architect | 戰略建築師", "jobs": "AI Architect | AI架構師, Data Scientist | 數據科學家", "traits": "Strategic, Logical | 具戰略眼光、理智"},
-                "INTP": {"title": "The Logician | 邏輯學家", "jobs": "Software Developer | 軟體開發者, Researcher | 研究員", "traits": "Analytical, Inventive | 善於分析、具創造力"},
-                "ENTJ": {"title": "The Commander | 指揮官", "jobs": "CEO / Founder | 執行長, Management Consultant | 管理顧問", "traits": "Decisive, Bold | 果斷、大膽"},
-                "ENTP": {"title": "The Debater | 辯論家", "jobs": "Product Manager | 產品經理, Entrepreneur | 創業家", "traits": "Curious, Flexible | 具好奇心、靈活"},
-                "INFJ": {"title": "The Advocate | 提倡者", "jobs": "Counselor | 心理輔導, Creative Director | 創意總監", "traits": "Idealistic, Insightful | 理想主義、具洞察力"},
-                "INFP": {"title": "The Mediator | 調解者", "jobs": "Writer | 作家, UX Designer | 用戶體驗設計師", "traits": "Empathetic, Creative | 具共情力、有創意"},
-                "ENFJ": {"title": "The Protagonist | 主人翁", "jobs": "Public Relations | 公關經理, Educator | 教育家", "traits": "Charismatic, Inspiring | 具魅力、具啟發性"},
-                "ENFP": {"title": "The Campaigner | 競選者", "jobs": "Marketing Lead | 市場營銷主管, Social Media | 社媒專家", "traits": "Enthusiastic, Creative | 熱情、有創意"},
-                "ISTJ": {"title": "The Logistician | 物流師", "jobs": "Accountant | 會計師, Systems Engineer | 系統工程師", "traits": "Reliable, Practical | 可靠、務實"},
-                "ISFJ": {"title": "The Defender | 守衛者", "jobs": "HR Admin | 人事行政, Customer Success | 客戶成功經理", "traits": "Loyal, Supportive | 忠誠、具支持性"},
-                "ESTJ": {"title": "The Executive | 總經理", "jobs": "Project Manager | 專案經理, Factory Director | 廠長", "traits": "Organized, Direct | 有條理、直接"},
-                "ESFJ": {"title": "The Consul | 執政官", "jobs": "Event Planner | 活動策劃, Sales Manager | 銷售經理", "traits": "Social, Cooperative | 擅長社交、協作"},
-                "ISTP": {"title": "The Virtuoso | 鑑賞家", "jobs": "Technical Analyst | 技術分析, Cyber Security | 網絡安全", "traits": "Practical, Problem-solver | 務實、問題解決者"},
-                "ISFP": {"title": "The Adventurer | 探險家", "jobs": "Graphic Designer | 平面設計師, Artist | 藝術家", "traits": "Sensitive, Flexible | 敏感、靈活"},
-                "ESTP": {"title": "The Entrepreneur | 企業家", "jobs": "Sales Lead | 銷售主管, Risk Manager | 風險管理員", "traits": "Energetic, Action-oriented | 活力充沛、行動導向"},
-                "ESFP": {"title": "The Entertainer | 表演者", "jobs": "Hospitality Lead | 酒店管理, Tour Guide | 領隊", "traits": "Spontaneous, Social | 隨性、社交型"}
+                "INTJ": {"title": "The Architect | 戰略建築師", "path": "AI Strategy & Deep Tech", "match": 98},
+                "INTP": {"title": "The Logician | 邏輯學家", "path": "Data Science & Research", "match": 96},
+                "ENTJ": {"title": "The Commander | 指揮官", "path": "Tech Ventures & Management", "match": 97},
+                "ENTP": {"title": "The Debater | 辯論家", "path": "Product Innovation & Growth", "match": 95},
+                "INFJ": {"title": "The Advocate | 提倡者", "path": "UX Strategy & ESG Consulting", "match": 94},
+                "INFP": {"title": "The Mediator | 調解者", "path": "Creative Design & Content", "match": 92},
+                "ENFJ": {"title": "The Protagonist | 主人翁", "path": "Talent Dev & Public Relations", "match": 93},
+                "ENFP": {"title": "The Campaigner | 競選者", "path": "Digital Marketing & Creative Lead", "match": 95},
+                "ISTJ": {"title": "The Logistician | 物流師", "path": "FinTech Compliance & IT Audit", "match": 94},
+                "ISFJ": {"title": "The Defender | 守衛者", "path": "Customer Success & HR Ops", "match": 91},
+                "ESTJ": {"title": "The Executive | 總經理", "path": "Operations & Project Management", "match": 96},
+                "ESFJ": {"title": "The Consul | 執政官", "path": "Sales Director & Event Strategy", "match": 92},
+                "ISTP": {"title": "The Virtuoso | 鑑賞家", "path": "Systems Engineering & Forensics", "match": 93},
+                "ISFP": {"title": "The Adventurer | 探險家", "path": "Creative Arts & Branding", "match": 90},
+                "ESTP": {"title": "The Entrepreneur | 企業家", "path": "Fintech Trading & Sales Lead", "match": 94},
+                "ESFP": {"title": "The Entertainer | 表演者", "path": "Media & Hospitality Management", "match": 91}
             }
-            
-            res = profiles.get(mcode, {"title": "Professional Talent | 專業人才", "jobs": "Industry Specialist | 行業專家", "traits": "Competent & Driven | 具備能力與動力"})            
-    # Enhanced Result Card
+            res = profiles.get(mcode, {"title": "Industry Specialist", "path": "General Management", "match": 85})
+
+        # # --- Display Radar Chart ---
+        #  # --- Premium Radar Chart Styling ---
+        #     fig = go.Figure()
+
+        #     # User's Result Trace
+        #     fig.add_trace(go.Scatterpolar(
+        #         r=radar_values + [radar_values[0]],
+        #         theta=categories + [categories[0]],
+        #         fill='toself',
+        #         fillcolor='rgba(37, 99, 235, 0.2)',  # Soft blue fill
+        #         line=dict(color='#2563eb', width=3),  # Bold electric blue border
+        #         marker=dict(color='#1e40af', size=8),
+        #         name='Your Profile'
+        #     ))
+
+        #     # Optional: Add a "Baseline" or "Average" for comparison (The "Advanced" touch)
+        #     fig.add_trace(go.Scatterpolar(
+        #         r=[50, 50, 50, 50, 50],
+        #         theta=categories + [categories[0]],
+        #         fill='none',
+        #         line=dict(color='rgba(148, 163, 184, 0.5)', width=1, dash='dot'),
+        #         name='Industry Avg'
+        #     ))
+
+        #     fig.update_layout(
+        #         polar=dict(
+        #             bgcolor="rgba(0,0,0,0)", # Transparent background
+        #             radialaxis=dict(
+        #                 visible=True,
+        #                 range=[0, 100],
+        #                 showline=False,
+        #                 gridcolor="#e2e8f0",
+        #                 tickfont=dict(size=10, color="#94a3b8")
+        #             ),
+        #             angularaxis=dict(
+        #                 tickfont=dict(size=12, color="#1e293b", weight="bold"),
+        #                 gridcolor="#e2e8f0",
+        #                 rotation=90, # Starts from the top
+        #                 direction="clockwise"
+        #             )
+        #         ),
+        #         showlegend=False,
+        #         height=400,
+        #         margin=dict(l=50, r=50, t=30, b=30),
+        #         paper_bgcolor='rgba(0,0,0,0)',
+        #         plot_bgcolor='rgba(0,0,0,0)',
+        #     )
+
+        #     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+            # --- Result Card ---
             st.markdown(f"""
-            <div style="background: #fdfaff; padding: 20px; border-radius: 12px; border: 1px solid #ddd6fe; margin-top: 15px;">
-                <p style="color: #7e22ce; font-size: 11px; font-weight: bold; margin-bottom: 5px;">ANALYSIS RESULT | 分析結果：</p>
-                <h4 style="margin:0; color: #6b21a8; font-size: 1.1rem;">{mcode}: {res['title']}</h4>
-                <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #7e22ce;">
-                    <p style="font-size: 12px; color: #4b5563; margin: 0;"><strong>Top Match | 最佳匹配:</strong></p>
-                    <p style="font-size: 13px; color: #7e22ce; font-weight: 600; margin: 0;">{res['jobs']}</p>
+            <div style="background: #f8fafc; padding: 25px; border-radius: 1.5rem; border: 2px solid #e2e8f0; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="background: #0f172a; color: white; padding: 5px 15px; border-radius: 99px; font-size: 12px; font-weight: bold;">{mcode}</span>
+                    <span style="color: #64748b; font-size: 11px; font-weight: bold;">COMPETENCY MATCH: {res['match']}%</span>
                 </div>
-                <p style="font-size: 11px; color: #9ca3af; margin-top: 10px;">Matched via RightPick Career Engine</p>
+                <h2 style="margin: 15px 0 5px 0; color: #1e293b; font-size: 1.5rem;">{res['title']}</h2>
+                <p style="font-size: 13px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                    Optimized Career Path: <b>{res['path']}</b>
+                </p>
+                <div style="margin-top: 15px;">
+                    <p style="font-size: 12px; color: #1e293b;"><strong>AI Insight | AI 洞察:</strong></p>
+                    <p style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                        Your profile indicates high adaptability in <b>cross-border collaboration</b> within the GBA ecosystem. 
+                        Your decision-making style is perfectly suited for high-stakes 2026 tech environments.
+                        <br><br>
+                        你的特質顯示你在大灣區生態圈的<b>跨境協作</b>中具備極高適應力。你的決策風格非常適合 2026 年高壓的科技產業環境。
+                    </p>
+                </div>
             </div>
             """, unsafe_allow_html=True)
             
-            st.caption("Based on RightPick Career Mapping Engine")
             st.markdown("[Get Full 20-Page Personality Analysis →](https://rightpickhk.com/personality)")
-
-
 
 # --- 3. Salary Insights (Interactive Benchmark Tool) ---
     st.markdown('''
@@ -277,7 +355,7 @@ with col_left:
             st.divider()
             st.markdown("[View Full 2026 Salary Guide →](https://rightpickhk.com/salary-compare)")
 
-st.markdown("---")
+    st.markdown("---")
 
 
 # # --- 右側欄位 (col_right) --- skills scraper + skills review
