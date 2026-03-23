@@ -47,8 +47,8 @@ st.markdown("""
 col_left, col_mid, col_right = st.columns([0.8, 1.5, 1], gap="medium")
 
 with col_left:
-#3 tests
-    # --- 1. Interest Analysis ---
+#A. 3 tests
+    # --- A1. Interest Analysis ---
     st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
@@ -121,10 +121,7 @@ with col_left:
             st.caption("Powered by RightPick")
             st.markdown("[Test for a Full Interest Analysis Report →](https://rightpickhk.com/career)")
 
-    # --- 2. Personality Match ---
-    import plotly.graph_objects as go
-
-# --- 2. Personality Match (Advanced Weighted & Bilingual) ---
+    # --- A2. Personality Match (Advanced Weighted & Bilingual) ---
     st.markdown('''
     <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
@@ -277,7 +274,7 @@ with col_left:
             
             st.markdown("[Get Full 20-Page Personality Analysis →](https://rightpickhk.com/personality)")
 
-# --- 3. Salary Insights (Interactive Benchmark Tool) ---
+    # --- A3. Salary Insights (Interactive Benchmark Tool) ---
     st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
@@ -499,6 +496,7 @@ with col_right:
 
     st.caption("✨ Matches updated in real-time based on RightPick's 2026 Skills Matrix.")
 
+# # --- col_mid --- AI Resume Lab + Career Path Recommendations ---
 with col_mid:
     # 3. AI Resume Lab
     # --- 定義職位類別關鍵字與建議課程數據庫 ---
@@ -626,9 +624,7 @@ with col_mid:
  # 4. AI Multimodal Analyst
     st.markdown("### 👤 AI Multimodal Analyst")
 
-
     uploaded_file = st.file_uploader("Upload your profile image", type=['jpg', 'png', 'jpeg'], key="profile_uploader")
-
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
@@ -762,5 +758,10 @@ with col_mid:
 
                 except Exception as e:
                     st.error(f"Analysis failed: please make sure the face is clearly seen. | 分析失敗: 請確保照片包含清晰人臉。({str(e)})")
+
+    st.markdown("---")
+
+# 5. AI Voice analyzer 
+
 
 
