@@ -934,6 +934,8 @@ with col_mid:
                                     pass
                             frame_count += 1
                         cap.release()
+                        cv2.destroyAllWindows() # 確保 OpenCV 視窗資源釋放
+                        gc.collect() # 強制進行垃圾回收
                         
                         # 統計出現次數最多的情緒
                         main_emotion = max(set(dominant_emotions), key=dominant_emotions.count) if dominant_emotions else "Neutral"
