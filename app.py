@@ -10,8 +10,8 @@ import numpy as np
 import streamlit as st
 import tempfile
 import os
-from moviepy import VideoFileClip
-import moviepy.video.fx as vfx
+from moviepy.editor import VideoFileClip
+import moviepy.video.fx.all as vfx
 import gc
 
 #version 2.9.2 - with video AI + refined load error
