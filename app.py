@@ -10,7 +10,7 @@ import numpy as np
 import streamlit as st
 import tempfile
 import os
-from moviepy import VideoFileClip
+from moviepy.editor import VideoFileClip
 import moviepy.video.fx as vfx
 
 #version 2.8 - with video AI
