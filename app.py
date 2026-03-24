@@ -10,7 +10,10 @@ import numpy as np
 import streamlit as st
 import tempfile
 import os
-from moviepy.editor import VideoFileClip
+try: 
+    from moviepy.editor import VideoFileClip
+except ImportError:
+    from moviepy import VideoFileClip
 import moviepy.video.fx.all as vfx
 import gc
 
@@ -892,10 +895,14 @@ with col_mid:
                             video_clip = VideoFileClip(video_path)
                             # 限制分析前 60 秒以保證處理速度
                             analysis_duration = min(60, video_clip.duration)
-                            sub_clip = video_clip.subclipped(0, analysis_duration)
+                            sub_clip = video_clip.subclip(0, analysis_duration)
                             
                             # 將音軌寫入臨時 wav 文件 (librosa 讀取 wav 不需要後端)
                             sub_clip.audio.write_audiofile(audio_temp_path, codec='pcm_s16le', logger=None)                        
+                            
+                            # [關鍵] 釋放資源：避免突然出現 "Need to reload"
+                            sub_clip.close()
+                            
                             # 使用 librosa 分析語速
                             y, sr = librosa.load(audio_temp_path, sr=None)
                             tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
