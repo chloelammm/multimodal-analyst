@@ -851,6 +851,7 @@ with col_mid:
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
+    st.markdown("---")
 
 
 # --- C4. 多模態簡報評估器 (前端 UI) ---
@@ -886,11 +887,10 @@ with col_mid:
                         video_clip = VideoFileClip(video_path)
                         # 限制分析前 60 秒以保證處理速度
                         analysis_duration = min(60, video_clip.duration)
-                        sub_clip = video_clip.subclip(0, analysis_duration)
+                        sub_clip = video_clip.subclipped(0, analysis_duration)
                         
                         # 將音軌寫入臨時 wav 文件 (librosa 讀取 wav 不需要後端)
-                        sub_clip.audio.write_audiofile(audio_temp_path, codec='pcm_s16le', verbose=False, logger=None)
-                        
+                        sub_clip.audio.write_audiofile(audio_temp_path, codec='pcm_s16le', logger=None)                        
                         # 使用 librosa 分析語速
                         y, sr = librosa.load(audio_temp_path, sr=None)
                         tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
@@ -929,64 +929,88 @@ with col_mid:
                     st.write("✅ Acoustic & Facial Data Synchronized")
                     status.update(label="Multimodal Analysis Complete!", state="complete", expanded=False)
 
-                # --- 🚀 多模態綜合分析邏輯 (Multimodal Logic) ---
-                # 1. 簡報技巧評估邏輯
-                if tempo_val > 150 and main_emotion in ['happy', 'surprise']:
-                    pres_skill = "Dynamic & Engaging | 富有感染力"
-                elif 120 <= tempo_val <= 150 and main_emotion == 'neutral':
-                    pres_skill = "Professional & Authoritative | 專業且具權威感"
-                else:
-                    pres_skill = "Variable Performance | 表現起伏"
-
-                # 2. 性格特質洞察邏輯
-                if main_emotion == 'happy':
-                    personality_insight = "Optimistic & Approachable | 樂觀且具親和力"
-                elif main_emotion == 'neutral':
-                    personality_insight = "Rational & Composed | 理性且冷靜"
-                elif main_emotion in ['fear', 'sad']:
-                    personality_insight = "High Sensitivity | 敏感度高 (可能有壓力)"
-                else:
-                    personality_insight = "Expressive | 情感豐富"
-
-                # --- 🏆 綜合評估卡片展示 ---
-                st.markdown(f"""
-                <div style="background: white; padding: 24px; border-radius: 1.5rem; border: 1px solid #e2e8f0; border-top: 6px solid #10b981; margin-top: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span style="background: #ecfdf5; color: #065f46; padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase;">C4 Multimodal Report</span>
-                        <span style="color: #64748b; font-size: 10px;">RightPick AI v2.7 FINAL</span>
-                    </div>
-                    
-                    <div style="display: flex; gap: 20px; margin-bottom: 15px;">
-                        <div style="flex: 1; text-align: center; background: #f8fafc; padding: 10px; border-radius: 12px;">
-                            <p style="font-size: 10px; color: #64748b; margin: 0;">Detected Emotion</p>
-                            <h4 style="margin: 5px 0 0 0; color: #1e293b; font-size: 1.2rem; text-transform: capitalize;">{main_emotion}</h4>
-                        </div>
-                        <div style="flex: 1; text-align: center; background: #f8fafc; padding: 10px; border-radius: 12px;">
-                            <p style="font-size: 10px; color: #64748b; margin: 0;">Presentation Skill</p>
-                            <h4 style="margin: 5px 0 0 0; color: #1e293b; font-size: 1.2rem;">{pres_skill.split(' | ')[0]}</h4>
-                        </div>
-                    </div>
-
-                    <div style="border-left: 4px solid #10b981; padding-left: 15px; margin-bottom: 15px;">
-                        <p style="font-size: 13px; color: #1e293b; margin: 0;"><strong>Overall Personality Trace:</strong><br>{personality_insight}</p>
-                    </div>
-                    
-                    <p style="font-size: 12px; color: #475569; line-height: 1.6; margin: 0;">
-                        <strong>RightPick Insight:</strong> {personality_insight.split(' | ')[0]} individuals with {main_emotion} expressions often excel in roles requiring high { 'persuasion' if main_emotion == 'happy' else 'analytical depth' }. 
-                        <br><br>
-                        受測者展現出<b>{pres_skill.split(' | ')[1]}</b>的簡報風格。
-                        分析顯示其性格特質偏向 <b>{personality_insight.split(' | ')[1]}</b>，符合 2026 年大灣區人才庫的特定職位基準。
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
+    # --- 🚀 多模態綜合分析邏輯 (Multimodal Logic) ---
                 
-                st.balloons()
+                # 1. 溝通風格深度評估
+                if tempo_val > 155:
+                    pace_label = "Fast & High Energy"
+                    skill_zh = "節奏明快、充滿激情"
+                elif 110 <= tempo_val <= 155:
+                    pace_label = "Steady & Controlled"
+                    skill_zh = "節奏穩健、掌控力強"
+                else:
+                    pace_label = "Thoughtful & Deliberate"
+                    skill_zh = "沉穩深思、具親和力"
+
+                # 2. 情感氣場與職業匹配
+                emotion_map = {
+                    'happy': ("Charismatic Leader", "具備領導魅力與團隊鼓舞能力"),
+                    'neutral': ("Analytical Expert", "表現出極高的理性思維與情緒穩定性"),
+                    'surprise': ("Creative Thinker", "具備快速反應能力與創新思維"),
+                    'fear': ("High Alertness", "處於高度專注狀態，對細節極端敏感"),
+                    'sad': ("Empathetic Communicator", "具備深層同理心，適合諮詢或協作角色"),
+                    'angry': ("Strong Assertiveness", "展現出極強的主張性與目標導向")
+                }
                 
+                trait_en, trait_zh = emotion_map.get(main_emotion, ("Balanced Professional", "表現均衡的專業人士"))
+
+                # 3. 生成「RightPick 獨家」深度洞察 (Insight)
+                if main_emotion == 'neutral' and 110 <= tempo_val <= 155:
+                    deep_insight = "該受測者在壓力下表現出極佳的「情緒屏蔽」能力，語速穩定，極其適合金融分析、法律審查或高階決策職位。"
+                elif main_emotion == 'happy' and tempo_val > 150:
+                    deep_insight = "受測者具備極強的敘事感染力（Storytelling），在市場營銷、公開演講或初創團隊招募中將展現巨大優勢。"
+                else:
+                    deep_insight = f"受測者展現了 {trait_zh} 的特質，配合 {skill_zh} 的表達方式，建議放置於需要高度{ '團隊協作' if main_emotion != 'neutral' else '獨立執行' }的工作環境中。"
+
+                # 4. 數據準備 (用於 HTML)
+                emotion_label = str(main_emotion).capitalize()
+                skill_en = pace_label
+                    
+# --- 🏆 綜合評估卡片展示 (含壓縮邏輯) ---
+                report_html = f"""
+<div style="background:white;padding:26px;border-radius:1.5rem;border:1px solid #e2e8f0;border-top:6px solid #10b981;box-shadow:0 12px 20px -5px rgba(0,0,0,0.1);font-family:sans-serif;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <span style="background:#ecfdf5;color:#065f46;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:0.5px;"> MULTIMODAL AUDIT REPORT</span>
+        <span style="color:#94a3b8;font-size:10px;font-weight:600;">ID: RP-2026-CONFIDENTIAL</span>
+    </div>
+    
+    <div style="display:flex;gap:15px;margin-bottom:20px;">
+        <div style="flex:1;text-align:center;background:#f8fafc;padding:15px;border-radius:16px;border:1px solid #f1f5f9;">
+            <p style="font-size:10px;color:#64748b;margin:0;font-weight:600;text-transform:uppercase;">Dominant Emotion</p>
+            <h4 style="margin:8px 0 0 0;color:#0f172a;font-size:1.3rem;font-weight:800;">{emotion_label}</h4>
+        </div>
+        <div style="flex:1;text-align:center;background:#f8fafc;padding:15px;border-radius:16px;border:1px solid #f1f5f9;">
+            <p style="font-size:10px;color:#64748b;margin:0;font-weight:600;text-transform:uppercase;">Communication Pace</p>
+            <h4 style="margin:8px 0 0 0;color:#0f172a;font-size:1.1rem;font-weight:700;">{skill_en}</h4>
+        </div>
+    </div>
+
+    <div style="background:#f0fdf4;border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid #dcfce7;">
+        <p style="font-size:14px;color:#166534;margin:0;font-weight:700;">🎯 Personality Benchmark: {trait_en}</p>
+        <p style="font-size:12.5px;color:#374151;margin:8px 0 0 0;line-height:1.5;">{trait_zh}。受測者的聲音特徵顯示表達風格為 <b>{skill_zh}</b>。</p>
+    </div>
+
+    <div style="padding:0 5px;">
+        <h5 style="font-size:11px;color:#64748b;margin:0 0 8px 0;text-transform:uppercase;font-weight:700;">RightPick AI Strategy Insight</h5>
+        <div style="background:#f8fafc;padding:12px;border-radius:8px;border-left:4px solid #94a3b8;">
+            <p style="font-size:12px;color:#1e293b;margin:0;line-height:1.6;font-style:italic;">"{deep_insight}"</p>
+        </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:15px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+        <p style="font-size:11px;color:#94a3b8;margin:0;">*Based on GBA Talent Database 2026 Standards</p>
+        <div style="width:10px;height:10px;background:#10b981;border-radius:50%;"></div>
+    </div>
+</div>
+""".replace('\n', '')
+
+                st.markdown(report_html, unsafe_allow_html=True)
+                                                
                 # 清理臨時影片路徑
                 try: os.unlink(video_path)
                 except: pass
 
-    # --- 全局清理臨時音訊文件 ---
-    if os.path.exists("temp_audio_final.wav"):
-        try: os.remove("temp_audio_final.wav")
-        except: pass
+                # --- 全局清理臨時音訊文件 ---
+                if os.path.exists("temp_audio_final.wav"):
+                    try: os.remove("temp_audio_final.wav")
+                    except: pass

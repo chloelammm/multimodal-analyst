@@ -7,3 +7,5 @@ tf-keras
 tensorflow==2.15.0
 pdfplumber
 plotly
+librosa
+moviepy
