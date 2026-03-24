@@ -8,4 +8,4 @@ tensorflow==2.15.0
 pdfplumber
 plotly
 librosa
-moviepy
+moviepy==1.0.3
