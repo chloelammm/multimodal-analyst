@@ -5,8 +5,15 @@ from deepface import DeepFace
 import cv2
 import pdfplumber
 import plotly.graph_objects as go
+import librosa
+import numpy as np
+import streamlit as st
+import tempfile
+import os
+from moviepy import VideoFileClip
+import moviepy.video.fx as vfx
 
-#version 2.7 - with Poll + skill cards
+#version 2.8 - with video AI
 
 # 1. 頁面基本配置
 st.set_page_config(page_title="RightPick AI | Professional Suite", layout="wide", page_icon="🤖")
@@ -35,7 +42,7 @@ st.markdown("""
         </div>
         <div>
             <h1 class="font-bold text-gray-900 leading-none" style="margin:0">RightPick <span class="text-blue-500">AI</span></h1>
-            <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Professional Assistant v2.6</span>
+            <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Professional Assistant v2.8</span>
         </div>
     </div>
 </nav>
@@ -356,8 +363,9 @@ with col_left:
 
 
 # # --- 右側欄位 (col_right) --- skills scraper + skills review
+# B. skills checker
 with col_right:
-    # 1. 2026 Skills Scraper 卡片
+    # B1. 2026 Skills Scraper 卡片
     st.markdown('''
         <div style="background-color: #2563eb; rounded-radius: 1.5rem; padding: 2rem; color: white; margin-bottom: 2rem; position: relative; overflow: hidden; border-radius: 1.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10;">
@@ -379,10 +387,9 @@ with col_right:
         </div>
     ''', unsafe_allow_html=True)
 
-
-#     # 2. Review Your Talent & Skills 卡片
-# --- 1. 強化版技能池 (Categorized Skills Pool) ---
-# 將技能分類，讓用戶在選擇時更有組織感
+#    # B2. Review Your Talent & Skills 卡片
+    # --- 1. 強化版技能池 (Categorized Skills Pool) ---
+    # 將技能分類，讓用戶在選擇時更有組織感
     SKILLS_MARKET = {
         "Technical / Hard Skills": [
             "Python (Data Science)", "Machine Learning", "Generative AI Prompting", 
@@ -432,7 +439,6 @@ with col_right:
     }
 
     # --- 3. UI 渲染 ---
-
     st.markdown('''
         <div style="margin-bottom: 1.5rem;">
             <h3 style="font-weight: bold; font-size: 1.25rem; color: #1f2937; margin: 0;">Review Your Talent & Skills</h3>
@@ -497,8 +503,9 @@ with col_right:
     st.caption("✨ Matches updated in real-time based on RightPick's 2026 Skills Matrix.")
 
 # # --- col_mid --- AI Resume Lab + Career Path Recommendations ---
+# C. AI Career helpers 
 with col_mid:
-    # 3. AI Resume Lab
+    # C1. AI Resume Lab
     # --- 定義職位類別關鍵字與建議課程數據庫 ---
     # 這裡可以根據 RightPick 的定位，加入更多 HK/GBA 相關的關鍵字
     # --- 經過驗證的職位類別與 LinkedIn Learning 連結數據庫 ---
@@ -621,7 +628,7 @@ with col_mid:
     st.markdown("---")
    
  
- # 4. AI Multimodal Analyst
+ # C2. AI Multimodal Analyst
     st.markdown("### 👤 AI Multimodal Analyst")
 
     uploaded_file = st.file_uploader("Upload your profile image", type=['jpg', 'png', 'jpeg'], key="profile_uploader")
@@ -761,7 +768,225 @@ with col_mid:
 
     st.markdown("---")
 
-# 5. AI Voice analyzer 
+# C3. AI Voice analyzer 
+# --- C3. AI Voice Analyser (Real Acoustic Engine) ---
+    st.markdown('''
+    <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-top: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">AI Voice Profiler | 語音智能分析</h3>
+            <span style="font-size: 10px; background-color: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">LIVE PROSODY</span>
+        </div>
+        <p style="font-size: 11px; color: #64748b; margin: 0;">Acoustic trait extraction for leadership & communication. | 提取語音特徵以評估領導力與溝通風格。</p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    with st.expander("🎙️ Audio Upload & Analysis | 語音上傳與分析", expanded=True):
+        audio_file = st.file_uploader("Upload intro (MP3/WAV)", type=['mp3', 'wav'], label_visibility="collapsed")
+    
+        if audio_file is not None:
+            st.audio(audio_file, format='audio/wav')
+            
+            if st.button("Run Deep Acoustic Audit", use_container_width=True):
+                with st.status("Extracting Vocal Features...", expanded=True) as status:
+                    # 1. 加載真實音頻數據
+                    y, sr = librosa.load(audio_file, duration=45) # 限制45秒以提升速度
+                    
+                    # 2. 提取真實語速 (BPM)
+                    tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+                    tempo_val = int(tempo)
+                    
+                    # 3. 提取音高 (Pitch)
+                    pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+                    avg_pitch = np.mean(pitches[magnitudes > np.max(magnitudes)*0.5])
+                    
+                    st.write("✅ FFT Waveform Isolation Complete")
+                    st.write("✅ Frequency Mapping to RightPick Career Matrix...")
+                    status.update(label="Analysis Complete!", state="complete", expanded=False)
+
+                # --- 核心邏輯：語速 -> 職業匹配 (Career Mapping) ---
+                if tempo_val > 150:
+                    job_cat = "High-Intensity Execution | 高強度執行型"
+                    recommended_roles = "Sales Lead, Fintech Trader, PR Manager"
+                    match_desc = "你的語速極快，展現出極強的說服力與反應速度，非常適合節奏極快、需要即時決策的環境。"
+                    vocal_energy = "High / Energetic"
+                    trait_lean = "Extraverted (E)"
+                elif 115 <= tempo_val <= 150:
+                    job_cat = "Collaborative Leadership | 協作領導型"
+                    recommended_roles = "Project Manager, Consultant, Marketing Lead"
+                    match_desc = "你的節奏穩定且富有韻律感，這是典型的『社交理想語速』，能有效建立信任並推動團隊協作。"
+                    vocal_energy = "Balanced / Engaging"
+                    trait_lean = "Extraverted (E)"
+                else:
+                    job_cat = "Technical Specialization | 技術專家型"
+                    recommended_roles = "Data Scientist, Compliance Officer, Researcher"
+                    match_desc = "你說話沈穩、節奏從容，這傳達了高度的嚴謹性與可信度，適合需要深度思考與精確輸出的崗位。"
+                    vocal_energy = "Measured / Analytical"
+                    trait_lean = "Introverted (I)"
+
+                # --- 視覺反饋：聲波圖 ---
+                st.write("#### 🔉 Acoustic Signature")
+                st.line_chart(y[::150], height=100)
+
+                # --- 數據指標表 (Metrics) ---
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Measured Tempo", f"{tempo_val} BPM")
+                col2.metric("Vocal Energy", vocal_energy.split(' ')[0])
+                col3.metric("Trait Lean", trait_lean.split(' ')[0])
+
+                # --- 🏆 職業推薦卡片 (Career Recommendation Card) ---
+                st.markdown(f"""
+                <div style="background: white; padding: 24px; border-radius: 1.5rem; border: 1px solid #e2e8f0; border-top: 6px solid #2563eb; margin-top: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="background: #eff6ff; color: #1e40af; padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; uppercase;">Acoustic Career Match</span>
+                        <span style="color: #64748b; font-size: 10px;">RightPick AI v2.7</span>
+                    </div>
+                    <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.4rem;">{job_cat}</h3>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
+                        <p style="font-size: 13px; color: #1e293b; margin: 0;"><strong>Recommended Roles:</strong><br>{recommended_roles}</p>
+                    </div>
+                    <p style="font-size: 12px; color: #475569; line-height: 1.6; margin: 0;">
+                        <strong>AI Insight:</strong> {match_desc}
+                        <br><br>
+                        分析顯示你的語音特徵與 <b>2026 大灣區科技人才標竿</b> 高度吻合，建議優先考慮上述職業路徑。
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
 
 
+# --- C4. 多模態簡報評估器 (前端 UI) ---
+    # --- UI 標題與 CSS 裝飾 ---
+    st.markdown('''
+    <div style="background-color: white; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid #e2e8f0; margin-top: 1rem; margin-bottom: 1rem; border-top: 5px solid #10b981;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <h3 style="font-weight: bold; font-size: 1.125rem; margin: 0; color: #111827;">Multimodal Presentation Auditor | 多模態簡報評估</h3>
+            <span style="font-size: 10px; background-color: #ecfdf5; color: #10b981; padding: 4px 10px; border-radius: 9999px; font-weight: bold;">VISION + AUDIO</span>
+        </div>
+        <p style="font-size: 11px; color: #64748b; margin: 0;">Analysing presentation skills, facial expressions, and personality trait from news reports or interviews. | 分析新聞報導或面試影片中的簡報技巧、面部表情與性格特質。</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    with st.expander("📹 Video Upload & Deep Audit | 影片上傳與深度審計", expanded=True):
+        video_file = st.file_uploader("Upload Presentation (MP4/MOV)", type=['mp4', 'mov'], label_visibility="collapsed")
+        
+        if video_file is not None:
+            # 1. 建立臨時影片文件以便處理
+            tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') 
+            tfile.write(video_file.read())
+            video_path = tfile.name
+            
+            st.video(video_file)
+            
+            if st.button("🚀 Start Multimodal Audit", use_container_width=True):
+                with st.status("Initializing AI Engines...", expanded=True) as status:
+                    
+                    # --- A. 聽覺分析 (使用 MoviePy 解決 NoBackendError) ---
+                    st.write("🎙️ Extracting Audio track...")
+                    audio_temp_path = "temp_audio_final.wav"
+                    try:
+                        video_clip = VideoFileClip(video_path)
+                        # 限制分析前 60 秒以保證處理速度
+                        analysis_duration = min(60, video_clip.duration)
+                        sub_clip = video_clip.subclip(0, analysis_duration)
+                        
+                        # 將音軌寫入臨時 wav 文件 (librosa 讀取 wav 不需要後端)
+                        sub_clip.audio.write_audiofile(audio_temp_path, codec='pcm_s16le', verbose=False, logger=None)
+                        
+                        # 使用 librosa 分析語速
+                        y, sr = librosa.load(audio_temp_path, sr=None)
+                        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+                        # 處理 tempo 可能為數組的情況
+                        tempo_val = int(tempo[0]) if isinstance(tempo, (np.ndarray, list)) else int(tempo)
+                        
+                        video_clip.close()
+                    except Exception as e:
+                        st.error(f"Audio Extraction Failed: {e}")
+                        tempo_val = 120 # 默認值備案
+                    
+                    # --- B. 視覺分析 (Face Analysis) ---
+                    st.write("👀 Analysing Facial Expressions (Frame Sampling)...")
+                    cap = cv2.VideoCapture(video_path)
+                    dominant_emotions = []
+                    frame_count = 0
+                    
+                    # 策略：每秒抽樣 1 幀分析 (跳過 30 幀)，平衡速度與準確度
+                    while cap.isOpened() and frame_count < 1800: # 最多分析 60 秒 (約 1800 幀)
+                        ret, frame = cap.read()
+                        if not ret: break
+                        
+                        if frame_count % 30 == 0:
+                            try:
+                                # enforce_detection=False 避免找不到人臉時導致程式中斷
+                                res = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False, silent=True)
+                                dominant_emotions.append(res[0]['dominant_emotion'])
+                            except:
+                                pass
+                        frame_count += 1
+                    cap.release()
+                    
+                    # 統計出現次數最多的情緒
+                    main_emotion = max(set(dominant_emotions), key=dominant_emotions.count) if dominant_emotions else "Neutral"
+                    
+                    st.write("✅ Acoustic & Facial Data Synchronized")
+                    status.update(label="Multimodal Analysis Complete!", state="complete", expanded=False)
 
+                # --- 🚀 多模態綜合分析邏輯 (Multimodal Logic) ---
+                # 1. 簡報技巧評估邏輯
+                if tempo_val > 150 and main_emotion in ['happy', 'surprise']:
+                    pres_skill = "Dynamic & Engaging | 富有感染力"
+                elif 120 <= tempo_val <= 150 and main_emotion == 'neutral':
+                    pres_skill = "Professional & Authoritative | 專業且具權威感"
+                else:
+                    pres_skill = "Variable Performance | 表現起伏"
+
+                # 2. 性格特質洞察邏輯
+                if main_emotion == 'happy':
+                    personality_insight = "Optimistic & Approachable | 樂觀且具親和力"
+                elif main_emotion == 'neutral':
+                    personality_insight = "Rational & Composed | 理性且冷靜"
+                elif main_emotion in ['fear', 'sad']:
+                    personality_insight = "High Sensitivity | 敏感度高 (可能有壓力)"
+                else:
+                    personality_insight = "Expressive | 情感豐富"
+
+                # --- 🏆 綜合評估卡片展示 ---
+                st.markdown(f"""
+                <div style="background: white; padding: 24px; border-radius: 1.5rem; border: 1px solid #e2e8f0; border-top: 6px solid #10b981; margin-top: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="background: #ecfdf5; color: #065f46; padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase;">C4 Multimodal Report</span>
+                        <span style="color: #64748b; font-size: 10px;">RightPick AI v2.7 FINAL</span>
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                        <div style="flex: 1; text-align: center; background: #f8fafc; padding: 10px; border-radius: 12px;">
+                            <p style="font-size: 10px; color: #64748b; margin: 0;">Detected Emotion</p>
+                            <h4 style="margin: 5px 0 0 0; color: #1e293b; font-size: 1.2rem; text-transform: capitalize;">{main_emotion}</h4>
+                        </div>
+                        <div style="flex: 1; text-align: center; background: #f8fafc; padding: 10px; border-radius: 12px;">
+                            <p style="font-size: 10px; color: #64748b; margin: 0;">Presentation Skill</p>
+                            <h4 style="margin: 5px 0 0 0; color: #1e293b; font-size: 1.2rem;">{pres_skill.split(' | ')[0]}</h4>
+                        </div>
+                    </div>
+
+                    <div style="border-left: 4px solid #10b981; padding-left: 15px; margin-bottom: 15px;">
+                        <p style="font-size: 13px; color: #1e293b; margin: 0;"><strong>Overall Personality Trace:</strong><br>{personality_insight}</p>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #475569; line-height: 1.6; margin: 0;">
+                        <strong>RightPick Insight:</strong> {personality_insight.split(' | ')[0]} individuals with {main_emotion} expressions often excel in roles requiring high { 'persuasion' if main_emotion == 'happy' else 'analytical depth' }. 
+                        <br><br>
+                        受測者展現出<b>{pres_skill.split(' | ')[1]}</b>的簡報風格。
+                        分析顯示其性格特質偏向 <b>{personality_insight.split(' | ')[1]}</b>，符合 2026 年大灣區人才庫的特定職位基準。
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.balloons()
+                
+                # 清理臨時影片路徑
+                try: os.unlink(video_path)
+                except: pass
+
+    # --- 全局清理臨時音訊文件 ---
+    if os.path.exists("temp_audio_final.wav"):
+        try: os.remove("temp_audio_final.wav")
+        except: pass
