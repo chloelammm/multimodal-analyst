@@ -10,6 +10,8 @@ import numpy as np
 import streamlit as st
 import tempfile
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 try: 
     from moviepy.editor import VideoFileClip
 except ImportError:
@@ -649,8 +651,6 @@ with col_mid:
     if st.session_state['c2_analysis_report'] is not None:
         # 顯示快取的結果 (不含圖片)
         st.markdown(st.session_state['c2_analysis_report'], unsafe_allow_html=True)
-        
-        # 提供一個按鈕讓用戶可以重置並重新上傳
         if st.button("🔄 New Analysis (重新開始新分析)", use_container_width=True):
             st.session_state['c2_analysis_report'] = None
             st.rerun()
@@ -946,6 +946,7 @@ with col_mid:
                                     # enforce_detection=False 避免找不到人臉時導致程式中斷
                                     res = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False, silent=True)
                                     dominant_emotions.append(res[0]['dominant_emotion'])
+                                    del res # 釋放分析結果資源
                                 except:
                                     pass
                             frame_count += 1
