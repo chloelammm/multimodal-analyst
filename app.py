@@ -1,25 +1,38 @@
-import streamlit as st
-import numpy as np
-from PIL import Image
-from deepface import DeepFace
-import cv2
-import pdfplumber
-import plotly.graph_objects as go
-import librosa
-import numpy as np
-import streamlit as st
-import tempfile
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
+import streamlit as st
+import numpy as np
+from PIL import Image
+import cv2
+import tempfile
+import gc
+
+# --- 兼容性導入 MoviePy ---
 try: 
     from moviepy.editor import VideoFileClip
 except ImportError:
-    from moviepy import VideoFileClip
-import moviepy.video.fx.all as vfx
-import gc
+    try:
+        from moviepy import VideoFileClip
+    except Exception as e:
+        st.error(f"MoviePy Import Error: {e}")
 
-#version 2.9.2 - with video AI + refined load error
+# --- 兼容性導入 vfx (解決本地 ModuleNotFoundError) ---
+try:
+    import moviepy.video.fx.all as vfx
+except (ImportError, ModuleNotFoundError):
+    try:
+        import moviepy.video.fx as vfx
+    except:
+        vfx = None # 如果本地環境沒有 fx，確保不崩潰
+
+from deepface import DeepFace
+import pdfplumber
+import plotly.graph_objects as go
+import librosa
+
+#version 2.9.8 - refined load error
 
 # 1. 頁面基本配置
 st.set_page_config(page_title="RightPick AI | Professional Suite", layout="wide", page_icon="🤖")
