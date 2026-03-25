@@ -679,7 +679,8 @@ with col_mid:
                     try:
                         img_array = np.array(image)
                         img_cv = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-                    
+                        del img_array # 立即釋放
+
                         results = DeepFace.analyze(img_cv, actions=['age', 'gender', 'emotion'], enforce_detection=False, silent = True)
                         res = results[0]
                     
@@ -799,7 +800,12 @@ with col_mid:
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-
+                    # 5. 更新快取並清理
+                        st.session_state['c2_analysis_report'] = report_html
+                        del img_cv, results, res # 釋放大型物件
+                        gc.collect() 
+                        
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Analysis failed: please make sure the face is clearly seen. | 分析失敗: 請確保照片包含清晰人臉。({str(e)})")
 
