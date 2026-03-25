@@ -680,7 +680,7 @@ with col_mid:
                         img_array = np.array(image)
                         img_cv = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
                     
-                        results = DeepFace.analyze(img_cv, actions=['age', 'gender', 'emotion'], enforce_detection=False)
+                        results = DeepFace.analyze(img_cv, actions=['age', 'gender', 'emotion'], enforce_detection=False, silent = True)
                         res = results[0]
                     
                         age = int(res.get('age', 30))
@@ -964,7 +964,6 @@ with col_mid:
                                     pass
                             frame_count += 1
                         cap.release()
-                        cv2.destroyAllWindows() # 確保 OpenCV 視窗資源釋放
                         gc.collect() # 強制進行垃圾回收
                         
                         # 統計出現次數最多的情緒
