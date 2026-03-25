@@ -52,6 +52,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 確保 session_state 中有儲存空間
+if 'c2_result_cache' not in st.session_state:
+    st.session_state['c2_result_cache'] = None
 if 'c3_audio_report_cache' not in st.session_state:
     st.session_state['c3_audio_report_cache'] = None
 if 'c4_report_cache' not in st.session_state:
@@ -639,140 +641,154 @@ with col_mid:
  # C2. AI Multimodal Analyst
     st.markdown("### 👤 AI Multimodal Analyst")
 
-    uploaded_file = st.file_uploader("Upload your profile image", type=['jpg', 'png', 'jpeg'], key="profile_uploader")
+    # 1. 初始化快取變數 (若不存在)
+    if 'c2_analysis_report' not in st.session_state:
+        st.session_state['c2_analysis_report'] = None
 
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        st.image(image, caption="Target Profile", width=300)
-       
-        if st.button("✨ Run Multimodal Analysis", use_container_width=True):
-            with st.spinner("AI 正在解析職業氣場..."):
-                try:
-                    img_array = np.array(image)
-                    img_cv = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-                   
-                    results = DeepFace.analyze(img_cv, actions=['age', 'gender', 'emotion'], enforce_detection=False)
-                    res = results[0]
-                   
-                    age = int(res.get('age', 30))
-                    gender = res['dominant_gender'].capitalize()
-                    emotion = res['dominant_emotion'].capitalize()
-                   
-                    emotion_content = {
-                        "happy": {
-                            "title": "Happiness Connector Aura | 快樂連結者氣場",
-                            "desc": "Your radiant smile radiates powerful positive energy, perfect for roles requiring charisma and team motivation. This aura boosts productivity by 13% and naturally attracts colleagues. Under pressure, you stay optimistic and spark creative solutions.\n\n你的笑容散發強大正面能量，完美適合需要人際魅力與團隊動力的角色。這種氣場提升13%生產力，讓同事自動被你吸引。在高壓環境中，你能保持樂觀，激發創意解決方案。",
-                            "strengths": "**Strengths: Natural Leader Charm, Pressure Transformer, Innovation Catalyst** | 🚀 優勢：天生領袖魅力、壓力轉化器、創新催化劑",
-                            "jobs": "**PR Manager, Sales Director, Luxury Hospitality** | 公關經理、销售總監、高端酒店管理"
-                        },
-                        "neutral": {
-                            "title": "Calm Analyst Aura | 冷靜分析師氣場",
-                            "desc": "Your calm expression shows professional reliability, ideal for data-driven decision roles. Emotional neutrality enables clear thinking without bias, perfect for crisis handling. Teams trust your objective judgment.\n\n你的平靜表情展現專業可靠，適合數據驅動決策角色。情感中立讓你清晰思考，避免情緒干擾，完美處理危機。團隊信任你的客觀判斷。",
-                            "strengths": "**Strengths: Rational Decision-Maker, Crisis Stabilizer, Reliable Executor** | 🚀 優勢：理性決策者、危機穩定器、可靠執行者",
-                            "jobs": "**Data Analyst, Researcher, Software Architect** | 數據分析師、研究員、軟件架構師"
-                        },
-                        "surprise": {
-                            "title": "Creative Pioneer Aura | 創意開拓者氣場",
-                            "desc": "Your curious, surprised expression signals innovative thinking and rapid adaptability. This aura dominates dynamic markets by spotting overlooked opportunities and leading industry trends.\n\n你的表情充滿好奇與驚喜，代表創新思維與快速適應力。這種氣場在動態市場中無敵，能發現他人忽略機會，引領行業趨勢。",
-                            "strengths": "**Strengths: Trend Forecaster, Adaptable Innovator, Opportunity Hunter** | 🚀 優勢：趨勢預測者、靈活變通者、機會獵手",
-                            "jobs": "**Creative Director, Event Planner, Marketing Strategist** | 創意總監、活動策劃、市場策略師"
-                        },
-                        "fear": {
-                            "title": "Risk Guardian Aura | 風險守護者氣場",
-                            "desc": "Your cautious expression shows high vigilance and risk awareness, perfect for security-critical roles. You foresee potential problems, protecting teams from disasters as the corporate safety net.\n\n謹慎表情顯示高度警覺與風險意識，適合安全關鍵崗位。你能預見潛在問題，保護團隊免於災難，成為企業安全防線。",
-                            "strengths": "**Strengths: Prevention Expert, Detail Controller, Safety Defender** | 🚀 優勢：預防專家、細節控管者、安全捍衛者",
-                            "jobs": "**Cybersecurity Analyst, Risk Auditor** | 網絡安全分析師、風險審計師"
-                        },
-                        "angry": {
-                            "title": "Justice Enforcer Aura | 正義執行者氣場",
-                            "desc": "Your determined expression represents strong principles and execution power, ideal for decisive leadership roles. You never compromise quality and drive tough transformations to achieve the impossible.\n\n堅定表情代表強烈原則與執行力，適合需要決斷的領導角色。你不妥協品質，能推動艱難變革，達成不可能任務。",
-                            "strengths": "**Strengths: Principle Defender, Change Driver, Execution Ironman** | 🚀 優勢：原則捍衛者、變革推動者、執行鐵人",
-                            "jobs": "**Legal Consultant, Chief Investigator** | 法律顧問、首席調查員"
-                        },
-                        "sad": {
-                            "title": "Deep Empathy Aura | 深度共鳴者氣場",
-                            "desc": "Your nuanced expression reveals high empathy and insight, perfect for human-centered careers. You understand others' needs, create emotional connections, and build lasting trust relationships.\n\n細膩表情顯示高同理心與洞察力，適合人文關懷職業。你能理解他人需求，創造情感連結，建立長期信任關係。",
-                            "strengths": "**Strengths: Empathetic Listener, Needs Interpreter, Relationship Healer** | 🚀 優勢：同理傾聽者、需求解讀者、關係修復者",
-                            "jobs": "**Counselor, Creative Writer, UX Researcher** | 輔導師、創意寫作者、UX研究員"
-                        },
-                        "disgust": {
-                            "title": "Quality Gatekeeper Aura | 品質守門人氣場",
-                            "desc": "Your sharp expression represents high standards and zero tolerance for errors, perfect for quality control. You spot issues others miss, ensuring excellence as the final quality checkpoint.\n\n敏銳表情代表高標準與零容忍錯誤，完美品質控制角色。你發現問題他人忽略，確保卓越輸出，成為品質最終防線。",
-                            "strengths": "**Strengths: Flaw Hunter, Standards Setter, Quality Enforcer** | 🚀 優勢：瑕疵獵人、標準制定者、品質鐵律",
-                            "jobs": "**Quality Manager, Forensic Specialist** | 品質主管、法證專家"
+    # 2. 判斷：如果有快取結果，直接顯示結果報告
+    if st.session_state['c2_analysis_report'] is not None:
+        # 顯示快取的結果 (不含圖片)
+        st.markdown(st.session_state['c2_analysis_report'], unsafe_allow_html=True)
+        
+        # 提供一個按鈕讓用戶可以重置並重新上傳
+        if st.button("🔄 New Analysis (重新開始新分析)", use_container_width=True):
+            st.session_state['c2_analysis_report'] = None
+            st.rerun()
+    else:
+        uploaded_file = st.file_uploader("Upload your profile image", type=['jpg', 'png', 'jpeg'], key="profile_uploader")
+
+        if uploaded_file is not None:
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Target Profile", width=300)
+        
+            if st.button("✨ Run Multimodal Analysis", use_container_width=True):
+                with st.spinner("AI 正在解析職業氣場..."):
+                    try:
+                        img_array = np.array(image)
+                        img_cv = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+                    
+                        results = DeepFace.analyze(img_cv, actions=['age', 'gender', 'emotion'], enforce_detection=False)
+                        res = results[0]
+                    
+                        age = int(res.get('age', 30))
+                        gender = res['dominant_gender'].capitalize()
+                        emotion = res['dominant_emotion'].capitalize()
+                    
+                        emotion_content = {
+                            "happy": {
+                                "title": "Happiness Connector Aura | 快樂連結者氣場",
+                                "desc": "Your radiant smile radiates powerful positive energy, perfect for roles requiring charisma and team motivation. This aura boosts productivity by 13% and naturally attracts colleagues. Under pressure, you stay optimistic and spark creative solutions.\n\n你的笑容散發強大正面能量，完美適合需要人際魅力與團隊動力的角色。這種氣場提升13%生產力，讓同事自動被你吸引。在高壓環境中，你能保持樂觀，激發創意解決方案。",
+                                "strengths": "**Strengths: Natural Leader Charm, Pressure Transformer, Innovation Catalyst** | 🚀 優勢：天生領袖魅力、壓力轉化器、創新催化劑",
+                                "jobs": "**PR Manager, Sales Director, Luxury Hospitality** | 公關經理、销售總監、高端酒店管理"
+                            },
+                            "neutral": {
+                                "title": "Calm Analyst Aura | 冷靜分析師氣場",
+                                "desc": "Your calm expression shows professional reliability, ideal for data-driven decision roles. Emotional neutrality enables clear thinking without bias, perfect for crisis handling. Teams trust your objective judgment.\n\n你的平靜表情展現專業可靠，適合數據驅動決策角色。情感中立讓你清晰思考，避免情緒干擾，完美處理危機。團隊信任你的客觀判斷。",
+                                "strengths": "**Strengths: Rational Decision-Maker, Crisis Stabilizer, Reliable Executor** | 🚀 優勢：理性決策者、危機穩定器、可靠執行者",
+                                "jobs": "**Data Analyst, Researcher, Software Architect** | 數據分析師、研究員、軟件架構師"
+                            },
+                            "surprise": {
+                                "title": "Creative Pioneer Aura | 創意開拓者氣場",
+                                "desc": "Your curious, surprised expression signals innovative thinking and rapid adaptability. This aura dominates dynamic markets by spotting overlooked opportunities and leading industry trends.\n\n你的表情充滿好奇與驚喜，代表創新思維與快速適應力。這種氣場在動態市場中無敵，能發現他人忽略機會，引領行業趨勢。",
+                                "strengths": "**Strengths: Trend Forecaster, Adaptable Innovator, Opportunity Hunter** | 🚀 優勢：趨勢預測者、靈活變通者、機會獵手",
+                                "jobs": "**Creative Director, Event Planner, Marketing Strategist** | 創意總監、活動策劃、市場策略師"
+                            },
+                            "fear": {
+                                "title": "Risk Guardian Aura | 風險守護者氣場",
+                                "desc": "Your cautious expression shows high vigilance and risk awareness, perfect for security-critical roles. You foresee potential problems, protecting teams from disasters as the corporate safety net.\n\n謹慎表情顯示高度警覺與風險意識，適合安全關鍵崗位。你能預見潛在問題，保護團隊免於災難，成為企業安全防線。",
+                                "strengths": "**Strengths: Prevention Expert, Detail Controller, Safety Defender** | 🚀 優勢：預防專家、細節控管者、安全捍衛者",
+                                "jobs": "**Cybersecurity Analyst, Risk Auditor** | 網絡安全分析師、風險審計師"
+                            },
+                            "angry": {
+                                "title": "Justice Enforcer Aura | 正義執行者氣場",
+                                "desc": "Your determined expression represents strong principles and execution power, ideal for decisive leadership roles. You never compromise quality and drive tough transformations to achieve the impossible.\n\n堅定表情代表強烈原則與執行力，適合需要決斷的領導角色。你不妥協品質，能推動艱難變革，達成不可能任務。",
+                                "strengths": "**Strengths: Principle Defender, Change Driver, Execution Ironman** | 🚀 優勢：原則捍衛者、變革推動者、執行鐵人",
+                                "jobs": "**Legal Consultant, Chief Investigator** | 法律顧問、首席調查員"
+                            },
+                            "sad": {
+                                "title": "Deep Empathy Aura | 深度共鳴者氣場",
+                                "desc": "Your nuanced expression reveals high empathy and insight, perfect for human-centered careers. You understand others' needs, create emotional connections, and build lasting trust relationships.\n\n細膩表情顯示高同理心與洞察力，適合人文關懷職業。你能理解他人需求，創造情感連結，建立長期信任關係。",
+                                "strengths": "**Strengths: Empathetic Listener, Needs Interpreter, Relationship Healer** | 🚀 優勢：同理傾聽者、需求解讀者、關係修復者",
+                                "jobs": "**Counselor, Creative Writer, UX Researcher** | 輔導師、創意寫作者、UX研究員"
+                            },
+                            "disgust": {
+                                "title": "Quality Gatekeeper Aura | 品質守門人氣場",
+                                "desc": "Your sharp expression represents high standards and zero tolerance for errors, perfect for quality control. You spot issues others miss, ensuring excellence as the final quality checkpoint.\n\n敏銳表情代表高標準與零容忍錯誤，完美品質控制角色。你發現問題他人忽略，確保卓越輸出，成為品質最終防線。",
+                                "strengths": "**Strengths: Flaw Hunter, Standards Setter, Quality Enforcer** | 🚀 優勢：瑕疵獵人、標準制定者、品質鐵律",
+                                "jobs": "**Quality Manager, Forensic Specialist** | 品質主管、法證專家"
+                            }
                         }
-                    }
 
 
-                    career_map = {
-                        "happy": "Public Relations, Sales Manager, High-end Hospitality",
-                        "neutral": "Data Analyst, Researcher, Software Architect",
-                        "surprise": "Creative Director, Event Planner, Marketing Strategist",
-                        "fear": "Cybersecurity Analyst, Risk Auditor",
-                        "angry": "Legal Consultant, Lead Investigator",
-                        "sad": "Counselor, Creative Writer, UX Researcher",
-                        "disgust": "Quality Controller, Forensic Specialist"
-                    }
-                    suggested_job = career_map.get(emotion, "Business Consultant")
+                        career_map = {
+                            "happy": "Public Relations, Sales Manager, High-end Hospitality",
+                            "neutral": "Data Analyst, Researcher, Software Architect",
+                            "surprise": "Creative Director, Event Planner, Marketing Strategist",
+                            "fear": "Cybersecurity Analyst, Risk Auditor",
+                            "angry": "Legal Consultant, Lead Investigator",
+                            "sad": "Counselor, Creative Writer, UX Researcher",
+                            "disgust": "Quality Controller, Forensic Specialist"
+                        }
+                        suggested_job = career_map.get(emotion, "Business Consultant")
 
 
-                    # NATIVE STREAMLIT COMPONENTS - Matches your happy blocks perfectly
-                    col1, col2, col3 = st.columns(3)
-                   
-                    with col1:
+                        # NATIVE STREAMLIT COMPONENTS - Matches your happy blocks perfectly
+                        col1, col2, col3 = st.columns(3)
+                    
+                        with col1:
+                            st.markdown(f"""
+                            <div style='background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #f1f5f9;'>
+                                <span style='font-size: 12px; color: #64748b; font-weight: bold; display: block;'>Gender</span>
+                                <span style='font-size: 20px; font-weight: 800; color: #1e293b;'>{gender}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                        with col2:
+                            st.markdown(f"""
+                            <div style='background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #f1f5f9;'>
+                                <span style='font-size: 12px; color: #64748b; font-weight: bold; display: block;'>Age</span>
+                                <span style='font-size: 20px; font-weight: 800; color: #1e293b;'>~{age}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                        with col3:
+                            st.markdown(f"""
+                            <div style='background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #f1f5f9;'>
+                                <span style='font-size: 12px; color: #64748b; font-weight: bold; display: block;'>Mood</span>
+                                <span style='font-size: 20px; font-weight: 800; color: #1e293b;'>{emotion}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+
+                        # Results section - exact happy block style
+                        st.markdown("---")
+                    
+                        content = emotion_content.get(emotion.capitalize(), emotion_content["neutral"])
+
+
                         st.markdown(f"""
-                        <div style='background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #f1f5f9;'>
-                            <span style='font-size: 12px; color: #64748b; font-weight: bold; display: block;'>Gender</span>
-                            <span style='font-size: 20px; font-weight: 800; color: #1e293b;'>{gender}</span>
+                        <div style='border-top: 1px solid #f1f5f9; padding-top: 1.5rem;'>
+                            <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;'>
+                                <span style='font-size: 12px; color: #3b82f6; font-weight: 900; text-transform: uppercase;'>Aura Analysis | 氣場解析</span>
+                                <span style='font-size: 10px; background: #eff6ff; color: #1d4ed8; padding: 6px 10px; border-radius: 9999px; font-weight: bold;'>AI Verified</span>
+                            </div>
+                            <h3 style='font-size: 1.5rem; font-weight: 900; color: #111827; margin: 0 0 16px 0;'>{content['title']}</h3>
+                            <div style='background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;'>
+                                <div style='font-size: 15px; color: #374151; line-height: 1.7; margin-bottom: 16px;'>{content['desc']}</div>
+                            </div>
+                            <div style='background: #f0f9ff; padding: 20px; border-radius: 12px; border: 1px solid #dbeafe; margin-bottom: 16px;'>
+                                <span style='font-size: 14px; color: #0369a1; font-weight: 800; display: block; margin-bottom: 12px;'>Key Strengths | 優勢特質：</span>
+                                <span style='font-size: 15px; color: #1e3a8a; font-weight: 700;'>{content['strengths']}</span>
+                            </div>
+                            <div style='background: #f0fdf4; padding: 20px; border-radius: 16px; border: 2px solid #dcfce7;'>
+                                <span style='font-size: 16px; color: #16a34a; font-weight: 800; display: block; margin-bottom: 8px;'>🚀 HK/GBA Hot Jobs | 香港/大灣區熱門職位：</span>
+                                <span style='font-size: 18px; color: #15803d; font-weight: 900;'>{content['jobs']}</span>
+                            </div>
                         </div>
                         """, unsafe_allow_html=True)
-                   
-                    with col2:
-                        st.markdown(f"""
-                        <div style='background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #f1f5f9;'>
-                            <span style='font-size: 12px; color: #64748b; font-weight: bold; display: block;'>Age</span>
-                            <span style='font-size: 20px; font-weight: 800; color: #1e293b;'>~{age}</span>
-                        </div>
-                        """, unsafe_allow_html=True)
-                   
-                    with col3:
-                        st.markdown(f"""
-                        <div style='background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #f1f5f9;'>
-                            <span style='font-size: 12px; color: #64748b; font-weight: bold; display: block;'>Mood</span>
-                            <span style='font-size: 20px; font-weight: 800; color: #1e293b;'>{emotion}</span>
-                        </div>
-                        """, unsafe_allow_html=True)
 
-
-                    # Results section - exact happy block style
-                    st.markdown("---")
-                   
-                    content = emotion_content.get(emotion.capitalize(), emotion_content["neutral"])
-
-
-                    st.markdown(f"""
-                    <div style='border-top: 1px solid #f1f5f9; padding-top: 1.5rem;'>
-                        <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;'>
-                            <span style='font-size: 12px; color: #3b82f6; font-weight: 900; text-transform: uppercase;'>Aura Analysis | 氣場解析</span>
-                            <span style='font-size: 10px; background: #eff6ff; color: #1d4ed8; padding: 6px 10px; border-radius: 9999px; font-weight: bold;'>AI Verified</span>
-                        </div>
-                        <h3 style='font-size: 1.5rem; font-weight: 900; color: #111827; margin: 0 0 16px 0;'>{content['title']}</h3>
-                        <div style='background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;'>
-                            <div style='font-size: 15px; color: #374151; line-height: 1.7; margin-bottom: 16px;'>{content['desc']}</div>
-                        </div>
-                        <div style='background: #f0f9ff; padding: 20px; border-radius: 12px; border: 1px solid #dbeafe; margin-bottom: 16px;'>
-                            <span style='font-size: 14px; color: #0369a1; font-weight: 800; display: block; margin-bottom: 12px;'>Key Strengths | 優勢特質：</span>
-                            <span style='font-size: 15px; color: #1e3a8a; font-weight: 700;'>{content['strengths']}</span>
-                        </div>
-                        <div style='background: #f0fdf4; padding: 20px; border-radius: 16px; border: 2px solid #dcfce7;'>
-                            <span style='font-size: 16px; color: #16a34a; font-weight: 800; display: block; margin-bottom: 8px;'>🚀 HK/GBA Hot Jobs | 香港/大灣區熱門職位：</span>
-                            <span style='font-size: 18px; color: #15803d; font-weight: 900;'>{content['jobs']}</span>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                except Exception as e:
-                    st.error(f"Analysis failed: please make sure the face is clearly seen. | 分析失敗: 請確保照片包含清晰人臉。({str(e)})")
+                    except Exception as e:
+                        st.error(f"Analysis failed: please make sure the face is clearly seen. | 分析失敗: 請確保照片包含清晰人臉。({str(e)})")
 
     st.markdown("---")
 
